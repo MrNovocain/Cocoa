@@ -145,8 +145,10 @@ to validate the CGS method's effectiveness in this real-world scenario.
 
 \end{table}
 
-
-
+\subsection{Data preprocess}
+Drop daily highest/lowest temperature records, there are no further missing values in Precipitation 
+and Average temperature. Then since more than 1 station might record data for the same day,
+we use a anomaly values (deviation from long-term mean) averaged across stations as covariates.
 
 
 
