@@ -1,0 +1,11 @@
+numpy
+pandas
+matplotlib
+scikit-learn
+statsmodels
+pmdarima
+joblib
+tqdm
+python-dotenv
+jupyter
+ipykernel
