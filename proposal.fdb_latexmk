@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1763809015.41676 "w:/Research/NP/Cocoa/proposal.tex" "proposal.pdf" "proposal" 1763809016.01963 0
+["pdflatex"] 1763813183.6607 "w:/Research/NP/Cocoa/proposal.tex" "proposal.pdf" "proposal" 1763813184.31761 0
   "C:/Users/shane/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1763806914 83788 3e06ff692e1323f668f12ea28ca579e9 ""
   "C:/Users/shane/AppData/Local/MiKTeX/fonts/tfm/public/rsfs/rsfs10.tfm" 1728065869 688 37338d6ab346c2f1466b29e195316aa4 ""
   "C:/Users/shane/AppData/Local/MiKTeX/fonts/tfm/public/rsfs/rsfs5.tfm" 1728065870 684 3a51bd4fd9600428d5264cf25f04bb9a ""
@@ -21,6 +21,7 @@
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/tfm/public/mathpazo/zplmr7t.tfm" 1136790254 1828 bb8add3bd19426549f9267c88b0cb8bd ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/tfm/public/mathpazo/zplmr7v.tfm" 1136790254 1012 955c4ca523d7827d33db91a33412b048 ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/tfm/public/mathpazo/zplmr7y.tfm" 1136790254 1316 b4037e9c09961a72f8476628774e1ec1 ""
+  "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1247596667 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1247596667 35752 024fb6c41858982481f6968b5fc26508 ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1247596667 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/mathpazo/fplmr.pfb" 1136871348 9356 3e1f7eacbb57d05d0b682da8d83eb600 ""
@@ -77,9 +78,9 @@
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/psnfss/ot1zplm.fd" 1585253778 458 5e7baa1a259bab50a2bdffad6426f38c ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/tools/array.sty" 1700599895 12667 e4b5eb11e4b7239e6c8a52bbe074a6c6 ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/tools/calc.sty" 1700599895 10214 547fd4d29642cb7c80bf54b49d447f01 ""
-  "proposal.aux" 1763809015 634 2820bf6338629bcf6e9eef48819129ec "pdflatex"
-  "proposal.tex" 1763809014 6462 95ad3b397dac0ee30bf389f3f9d1c097 ""
-  "w:/Research/NP/Cocoa/proposal.tex" 1763809014 6462 95ad3b397dac0ee30bf389f3f9d1c097 ""
+  "proposal.aux" 1763813184 1060 9cba52875f8a982a570f1890f104ab8e "pdflatex"
+  "proposal.tex" 1763813183 10305 a213e831c6229c83410d82896386a10d ""
+  "w:/Research/NP/Cocoa/proposal.tex" 1763813183 10305 a213e831c6229c83410d82896386a10d ""
   (generated)
   "proposal.aux"
   "proposal.log"

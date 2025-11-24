@@ -59,9 +59,9 @@ def _calculate_expanding_climatology(weather_df: pd.DataFrame) -> pd.DataFrame:
 
     return weather_df
 
-def build_features(raw_data_dir: Path, processed_data_dir: Path) -> pd.DataFrame:
+def build_features(raw_data_dir: Path, processed_data_dir: Path,reading_path: str = 'Ghana_data.csv',file_name: str = 'cocoa_ghana.csv') -> pd.DataFrame:
     # 1. Load and process weather data
-    raw_regressors = pd.read_csv(raw_data_dir / 'Ghana_data.csv')
+    raw_regressors = pd.read_csv(raw_data_dir / reading_path)
     raw_regressors['DATE'] = pd.to_datetime(raw_regressors['DATE'])
     
     # Fill PRCP NaNs
@@ -144,7 +144,7 @@ def build_features(raw_data_dir: Path, processed_data_dir: Path) -> pd.DataFrame
 
     # Save
     processed_data_dir.mkdir(parents=True, exist_ok=True)
-    cocoa_ghana.to_csv(processed_data_dir / 'cocoa_ghana.csv', index=False)
+    cocoa_ghana.to_csv(processed_data_dir / file_name, index=False)
 
     return cocoa_ghana
 
@@ -154,8 +154,14 @@ if __name__ == '__main__':
     processed_data_path = project_root / 'data' / 'processed'
     
     # Create dummy data for testing if files don't exist
-    if not (raw_data_path / 'Ghana_data.csv').exists():
+    # if not (raw_data_path / 'Ghana_data.csv').exists():
+    #     print("Note: Ensure input CSVs exist. Code is ready to run.")
+    # else:
+    #     df = build_features(raw_data_path, processed_data_path)
+    #     print(df.head())
+
+    if not (raw_data_path / 'Ghana_data_full.csv').exists():
         print("Note: Ensure input CSVs exist. Code is ready to run.")
     else:
-        df = build_features(raw_data_path, processed_data_path)
+        df = build_features(raw_data_path, processed_data_path, reading_path='Ghana_data_full.csv',file_name='cocoa_ghana_full.csv')
         print(df.head())
