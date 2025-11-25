@@ -110,8 +110,9 @@ class ExperimentRunner:
         run_config = {
             "model_name": self.model_name,
             "run_timestamp": os.path.basename(self.output_dir).split('_')[0],
-            "oos_start_date": self.oos_start_date,
-            "features": self.feature_cols,
+            "test_set_start_date": self.oos_start_date,
+            "structural_break_time": "not applied",
+            "regressors": self.feature_cols,
             "target": self.target_col,
             "best_hyperparameters": best_params,
             "mfv_best_score": best_mfv,
