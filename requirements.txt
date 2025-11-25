@@ -2,6 +2,7 @@ numpy
 pandas
 matplotlib
 scikit-learn
+xgboost
 statsmodels
 pmdarima
 joblib

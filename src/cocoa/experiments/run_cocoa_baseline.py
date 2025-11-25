@@ -4,7 +4,7 @@ import logging
 
 from ..logging_config import setup_logging
 from ..data import load_cocoa_raw, preprocess_cocoa, build_features
-from ..models import naive_forecast, evaluate_forecast
+from ..models import  evaluate_forecast
 from ..config import settings
 
 
