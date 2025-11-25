@@ -1,7 +1,7 @@
 from typing import Dict, Any, Literal
 
 from xgboost import XGBRegressor
-from .base import BaseModel
+from .base_model import BaseModel
 
 
 class XGBModel(BaseModel):

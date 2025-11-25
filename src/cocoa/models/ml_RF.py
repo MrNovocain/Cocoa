@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Iterable, Tuple, Type, Literal
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from itertools import product
-from .base import BaseModel
+from .base_model import BaseModel
 
 class RFModel(BaseModel):
     """
