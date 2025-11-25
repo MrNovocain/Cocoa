@@ -37,5 +37,8 @@ if __name__ == "__main__":
         param_grid=NP_PARAM_GRID,
         data_path=PROCESSED_DATA_PATH,
         oos_start_date=OOS_START_DATE,
+        kernel_name=kernel.__class__.__name__,
+        poly_order=engine.order,
     )
     np_experiment.run()
+    

@@ -38,6 +38,8 @@ class ExperimentRunner:
         param_grid: Dict[str, List],
         data_path: str,
         oos_start_date: str,
+        kernel_name: str | None = None,
+        poly_order: int | None = None,
         output_base_dir: str = "w:/Research/NP/Cocoa/output/cocoa_forecast",
     ):
         self.model_name = model_name
@@ -47,6 +49,8 @@ class ExperimentRunner:
         self.param_grid = param_grid
         self.data_path = data_path
         self.oos_start_date = oos_start_date
+        self.kernel_name = kernel_name
+        self.poly_order = poly_order
 
         # --- Create a unique directory for this experiment run ---
         run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -117,6 +121,10 @@ class ExperimentRunner:
             "best_hyperparameters": best_params,
             "mfv_best_score": best_mfv,
         }
+        if self.kernel_name:
+            run_config["kernel"] = self.kernel_name
+        if self.poly_order is not None:
+            run_config["polynomial_order"] = self.poly_order
         with open(os.path.join(self.output_dir, "config.json"), "w") as f:
             json.dump(run_config, f, indent=4)
 
