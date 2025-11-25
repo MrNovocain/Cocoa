@@ -1,20 +1,43 @@
-"""Defines the abstract base class for all models."""
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Dict, List, Any, Iterable, Tuple, Type
 
-import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+from itertools import product
 
+
+# ============================================================
+# Abstract base model
+# ============================================================
 
 class BaseModel(ABC):
-    """Abstract Base Class for all forecasting models."""
+    """
+    Abstract base class for all forecasting models.
+    The interface is intentionally minimal: fit + predict.
+    """
+
+    def __init__(self) -> None:
+        self.hyperparams: Dict[str, Any] = {}
+        self._is_fitted: bool = False
 
     @abstractmethod
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> "BaseModel":
-        """Fit the model to the training data."""
-        raise NotImplementedError
+    def fit(self, X, y, sample_weight=None) -> "BaseModel":
+        """Fit the model on a given training sample."""
+        ...
 
     @abstractmethod
-    def predict(self, X: pd.DataFrame) -> pd.Series:
-        """Make predictions on new data."""
-        raise NotImplementedError
+    def predict(self, X):
+        """Predict target values for new covariates X."""
+        ...
+
+    @property
+    def is_fitted(self) -> bool:
+        return self._is_fitted
+
+    def clone(self) -> "BaseModel":
+        """Return a fresh, unfitted copy with the same hyperparameters."""
+        return self.__class__(**self.hyperparams)
