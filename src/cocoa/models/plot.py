@@ -1,5 +1,6 @@
 import pandas as pd
 from matplotlib import pyplot as plt
+import numpy as np
 import os
 
 
@@ -12,7 +13,7 @@ def plot_forecast(
     output_path: str = "data/processed/point_forecast.png",
 ):
     """
-    Plot full history of the target series and overlay model forecasts.
+    Plot full history of the price series and overlay model-implied price forecasts.
 
     Parameters
     ----------
@@ -30,24 +31,34 @@ def plot_forecast(
     output_path : str
         Where to save the PNG.
     """
-    # Full series
-    all_dates = df["date"]
-    all_y = df[target_col]
-
-    if len(all_dates) != len(y_pred):
+    if len(df) != len(y_pred):
         raise ValueError(
-            f"Length mismatch: {len(all_dates)} dates in df vs {len(y_pred)} predictions."
+            f"Length mismatch: {len(df)} rows in df vs {len(y_pred)} predictions."
         )
+
+    plot_df = df[["date", "log_price"]].copy()
+    plot_df["log_return_hat"] = y_pred
+
+    # Reconstruct the predicted log price level
+    # log_price_hat(t) = log_price(t-1) + log_return_hat(t)
+    # The feature 'log_price_lagt' is log_price(t-1)
+    if "log_price_lagt" not in df.columns:
+        raise KeyError("The DataFrame must contain 'log_price_lagt' to reconstruct price forecasts.")
+    plot_df["log_price_hat"] = df["log_price_lagt"] + plot_df["log_return_hat"]
+
+    # Convert log prices to actual prices
+    plot_df["price"] = np.exp(plot_df["log_price"])
+    plot_df["price_hat"] = np.exp(plot_df["log_price_hat"])
 
     plt.style.use("seaborn-v0_8-whitegrid")
     fig, ax = plt.subplots(figsize=(15, 7))
 
-    ax.plot(all_dates, all_y, label=f"Actual {target_col} (Full History)", linestyle="-", color="black", linewidth=1.0)
-    ax.plot(all_dates, y_pred, label=f"{model_label} Point Forecast (Full Sample)", linestyle="--", color="firebrick")
+    ax.plot(plot_df["date"], plot_df["price"], label="Actual Price", linestyle="-", color="black", linewidth=1.0)
+    ax.plot(plot_df["date"], plot_df["price_hat"], label=f"{model_label} Forecasted Price", linestyle="--", color="firebrick")
 
-    ax.set_title(f"Cocoa {target_col}: Full History and Forecast", fontsize=16)
+    ax.set_title(f"Cocoa Price: Actual vs. {model_label} Forecast", fontsize=16)
     ax.set_xlabel("Date", fontsize=12)
-    ax.set_ylabel(target_col, fontsize=12)
+    ax.set_ylabel("Price", fontsize=12)
     ax.legend(fontsize=10)
     ax.tick_params(axis="x", rotation=45)
 

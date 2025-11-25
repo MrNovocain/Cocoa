@@ -1,7 +1,15 @@
-from cocoa.models import CocoaDataset, RFModel, MFVValidator, plot_forecast
 from itertools import product
 import numpy as np
 import pandas as pd
+
+from cocoa.models import CocoaDataset, RFModel, MFVValidator, plot_forecast
+from .assets import (
+    PROCESSED_DATA_PATH,
+    OOS_START_DATE,
+    RF_FEATURE_COLS,
+    RF_TARGET_COL,
+    RF_PARAM_GRID,
+)
 
 def expand_grid(grid):
     keys = list(grid.keys())
@@ -11,23 +19,14 @@ def expand_grid(grid):
 
 if __name__ == "__main__":
     # 1. Construct dataset
-    feature_cols = [
-        "PRCP_anom_mean",
-        "TAVG_anom_mean",
-        "PRCP_anom_std",
-        "TAVG_anom_std",
-        "N_stations",
-    ]
-    target_col = "log_price"
-
     dataset = CocoaDataset(
-        csv_path="w:/Research/NP/Cocoa/data/processed/cocoa_ghana_full.csv",
-        feature_cols=feature_cols,
-        target_col=target_col,
+        csv_path=PROCESSED_DATA_PATH,
+        feature_cols=RF_FEATURE_COLS,
+        target_col=RF_TARGET_COL,
     )
 
     # 2. Train / OOS split
-    split = dataset.split_oos_by_date("2024-11-29")
+    split = dataset.split_oos_by_date(OOS_START_DATE)
 
     X_train_cv = split.X_train
     y_train_cv = split.y_train
@@ -39,14 +38,7 @@ if __name__ == "__main__":
     print(T_train, T_test)
 
     # 3. MFV RF tuning
-    param_grid = {
-        "n_estimators": [200, 500],
-        "max_depth": [3, 5, None],
-        "min_samples_leaf": [1, 5, 20],
-        "max_features": ["sqrt", "log2"],
-    }
-
-    param_list = list(expand_grid(param_grid))
+    param_list = list(expand_grid(RF_PARAM_GRID))
 
     mfv = MFVValidator(Q=5, block_size=200)
     best_params, best_mfv, _ = mfv.grid_search(
@@ -66,7 +58,7 @@ if __name__ == "__main__":
     # 5. Plot OOS forecast
     plot_forecast(
         df=dataset.df,
-        target_col=target_col,
+        target_col=RF_TARGET_COL,
         y_pred=y_full_pred,
         model_label="Random Forest",
         output_path="data/processed/rf_oos_forecast.png",
