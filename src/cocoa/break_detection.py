@@ -1,10 +1,9 @@
 """
 Structural break detection methods for time series regression.
 """
-from functools import partial
 import numpy as np
 import pandas as pd
-from typing import Protocol, Optional
+from typing import Protocol, Optional, Union
 
 
 class Kernel(Protocol):
@@ -13,35 +12,22 @@ class Kernel(Protocol):
         ...
     
 
-class LocalLinearRegressor(Protocol):
-    """
-    Protocol for a Local Linear Regressor, defining the expected interface.
-    """
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "LocalLinearRegressor":
-        ...
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        ...
-
-
 def estimate_break_mohr_ll(
     y: np.ndarray,
     X: np.ndarray,
-    pilot_estimator: LocalLinearRegressor,
+    m_hat: np.ndarray,
     center_X: bool = True,
     standardize_X: bool = True,
     trim_frac: Optional[float] = 0.05,
 ) -> int:
     """
     Estimate single break index T1_hat using Mohr–Selk (2020) logic,
-    but with a global Local Linear estimator as pilot.
+    using pre-computed pilot estimates for the conditional mean.
 
     Args:
         y (np.ndarray): Target variable, shape (T,).
         X (np.ndarray): Regressors, shape (T, d), time-ordered.
-        pilot_estimator (LocalLinearRegressor): An instantiated local linear
-            regressor to be used as the pilot estimator.
+        m_hat (np.ndarray): Pre-computed pilot estimates of E[y|X], shape (T,).
         center_X (bool): Whether to center the columns of X.
         standardize_X (bool): Whether to standardize the columns of X.
         trim_frac (Optional[float]): Fraction to trim from each end of the
@@ -65,9 +51,7 @@ def estimate_break_mohr_ll(
             std[std == 0] = 1.0
             X_proc /= std
 
-    # 3. Step 1 – Fit global local linear and residuals
-    pilot_estimator.fit(X_proc, y)
-    m_hat = pilot_estimator.predict(X_proc)
+    # 3. Step 1 – Calculate residuals from pre-computed pilot
     U_hat = y - m_hat
 
     # 4. Step 2 – Truncation weights
@@ -144,54 +128,36 @@ from cocoa.models.np_kernels import GaussianKernel
 from cocoa.models.np_engines import LocalPolynomialEngine
 from cocoa.models.np_regime import NPRegimeModel
 from cocoa.models.mfv_CV import MFVValidator
-from cocoa.models.base_model import BaseModel
 from cocoa.models.bandwidth import create_precentered_grid
 
 
-class LocalLinearWrapper(BaseModel, LocalLinearRegressor):
+def mfv_mse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    return np.mean((y_true - y_pred) ** 2)
+
+
+def _create_mfv_splits(T: int, Q: int):
     """
-    A wrapper to make LocalPolynomialEngine conform to the LocalLinearRegressor
-    protocol and be compatible with MFVValidator. It holds the engine,
-    kernel, and bandwidth.
+    Create indices for Modified Forward-looking Validation (MFV).
+
+    Splits data of length T into Q blocks. For each block q in {1,...,Q},
+    the validation set is block q and the training set is all preceding
+    blocks {1,...,q-1}. The first block is used for validation only, with
+    an empty training set initially, which is often handled by the model logic.
     """
-    def __init__(self, kernel: Kernel, bandwidth: float):
-        self.engine = LocalPolynomialEngine(order=1)
-        self.kernel = kernel
-        self.bandwidth = bandwidth
-        self._X_train = None
-        self._y_train = None
+    if not 1 <= Q <= T:
+        raise ValueError("Q must be between 1 and T.")
 
-    def fit(self, X, y, X_val=None) -> "LocalLinearWrapper":
-        # MFV validator passes pandas objects, so convert to numpy before storing.
-        if hasattr(X, 'values'):
-            X = X.values
-        if hasattr(y, 'values'):
-            y = y.values
-        
-        if not isinstance(X, np.ndarray) or not isinstance(y, np.ndarray):
-            raise TypeError("Inputs X and y must be numpy arrays or pandas objects.")
+    block_size = T // Q
+    indices = np.arange(T)
+    splits = []
 
-        self._X_train = X
-        self._y_train = y
-        return self
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        if self._X_train is None or self._y_train is None:
-            raise RuntimeError("Model must be fitted before prediction.")
-        
-        # The MFV validator might pass a pandas object for X.
-        if hasattr(X, 'values'):
-            X = X.values
-
-        if not isinstance(X, np.ndarray):
-            raise TypeError("Input X must be a numpy array or pandas object.")
-
-        # The underlying engine expects pandas, so we convert here.
-        X_train_df = pd.DataFrame(self._X_train)
-        y_train_s = pd.Series(self._y_train)
-        X_eval = pd.DataFrame(X)
-        return self.engine.fit(X_train_df, y_train_s, X_eval, self.bandwidth, self.kernel)
-
+    for q in range(1, Q + 1):
+        val_start = (q - 1) * block_size
+        val_end = q * block_size if q < Q else T
+        train_indices = indices[:val_start]
+        val_indices = indices[val_start:val_end]
+        splits.append((train_indices, val_indices))
+    return splits
 
 if __name__ == "__main__":
     # 1. Load the dataset and get the training split
@@ -203,45 +169,58 @@ if __name__ == "__main__":
     )
     split = dataset.split_oos_by_date(OOS_START_DATE)
     X_train_np = split.X_train.values
-    y_train_np = split.y_train.values
+    y_train_np = split.y_train.values.flatten()
     
     T, d = X_train_np.shape
 
     # 2. Find the optimal pilot bandwidth `h` using MFV cross-validation.
     print("\nFinding optimal pilot bandwidth using MFV cross-validation...")
     kernel = GaussianKernel()
+    ll_engine = LocalPolynomialEngine(order=1)
     
     # Define a grid of bandwidths to search.
     bandwidth_grid = create_precentered_grid(T=T, d=d)
-    param_grid = [
-        {"kernel": kernel, "bandwidth": h} for h in bandwidth_grid
-    ]
 
-    validator = MFVValidator(Q=5)
+    Q = 5  # Number of MFV blocks
+    mfv_splits = _create_mfv_splits(T, Q)
     
-    best_params, best_score, _ = validator.grid_search(
-        model_class=LocalLinearWrapper,
-        X_train=X_train_np,
-        y_train=y_train_np,
-        param_grid=param_grid,
-        verbose=True
-    )
+    scores = []
+    for h in bandwidth_grid:
+        print(f"  Testing h = {h:.4f}...")
+        preds = np.zeros_like(y_train_np)
+        for train_indices, val_indices in mfv_splits:
+            X_mfv_train, y_mfv_train = X_train_np[train_indices], y_train_np[train_indices]
+            if len(X_mfv_train) == 0:
+                # Skip first fold where training set is empty
+                continue
+            X_mfv_val = X_train_np[val_indices]
 
-    pilot_bandwidth = best_params["bandwidth"]
+            # The engine expects pandas inputs
+            X_mfv_train_df = pd.DataFrame(X_mfv_train)
+            y_mfv_train_s = pd.Series(y_mfv_train)
+            X_mfv_val_df = pd.DataFrame(X_mfv_val)
+
+            preds[val_indices] = ll_engine.fit(X_mfv_train_df, y_mfv_train_s, X_mfv_val_df, h, kernel)
+        
+        score = mfv_mse(y_train_np, preds)
+        scores.append(score)
+
+    best_idx = np.argmin(scores)
+    pilot_bandwidth = bandwidth_grid[best_idx]
+    best_score = scores[best_idx]
     print(f"\nFound best pilot bandwidth: h = {pilot_bandwidth:.4f} (MFV MSE: {best_score:.4f})")
 
-    # 3. Instantiate the pilot estimator with the best bandwidth
-    pilot_ll = LocalLinearWrapper(kernel=kernel, bandwidth=pilot_bandwidth)
+    # 3. Get pilot estimates `m_hat` using the full training data and best bandwidth
+    print(f"\nCalculating pilot estimates with optimal bandwidth h={pilot_bandwidth:.4f}...")
+    m_hat = ll_engine.fit(split.X_train, split.y_train, split.X_train, pilot_bandwidth, kernel)
 
-    # 4. Run the break date estimation
+    # 4. Run the break date estimation with the pilot estimates
     print(f"\nEstimating break date with optimal pilot bandwidth h={pilot_bandwidth:.4f}...")
     T1_hat = estimate_break_mohr_ll(
         y=y_train_np,
         X=X_train_np,
-        pilot_estimator=pilot_ll,
+        m_hat=m_hat,
     )
 
     print(f"\nEstimated break date T1_hat (1-based index): {T1_hat}")
-###Estimating break date with pilot bandwidth h=1.5...
-                                                                                                                                                                                   
-###Estimated break date T1_hat (1-based index): 4914
+# ============================================================

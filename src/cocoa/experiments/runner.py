@@ -4,8 +4,12 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from joblib import dump
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any, Type, Tuple
 
+from cocoa.experiments.fitting_np_combinations import T_train
+from cocoa.models.bandwidth import create_precentered_grid
+from cocoa.models.assets import RF_PARAM_GRID, XGB_PARAM_GRID
+from ..models import RFModel, XGBModel, NPRegimeModel
 from ..models import (
     BaseModel,
     CocoaDataset,
@@ -13,6 +17,7 @@ from ..models import (
     evaluate_forecast,
     plot_forecast,
 )
+from ..utils.bias_var_decomposition import bias_variance_decomposition
 
 
 def expand_grid(grid: Dict[str, List]) -> List[Dict[str, Any]]:
@@ -35,25 +40,28 @@ class ExperimentRunner:
         model_class: Type[BaseModel],
         feature_cols: List[str],
         target_col: str,
-        param_grid: Dict[str, List],
         data_path: str,
         oos_start_date: str,
         sample_start_index: int | None = None,
         kernel_name: str | None = None,
         poly_order: int | None = None,
+        n_bootstrap_rounds: int = 50,
         output_base_dir: str = "w:/Research/NP/Cocoa/output/cocoa_forecast",
     ):
         self.model_name = model_name
         self.model_class = model_class
         self.feature_cols = feature_cols
         self.target_col = target_col
-        self.param_grid = param_grid
         self.data_path = data_path
         self.sample_start_index = sample_start_index
         self.oos_start_date = oos_start_date
         self.kernel_name = kernel_name
         self.poly_order = poly_order
         self.start_date = None
+        self.n_bootstrap_rounds = n_bootstrap_rounds
+        self.param_grid = None
+
+
 
         # --- Create a unique directory for this experiment run ---
         run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -78,7 +86,22 @@ class ExperimentRunner:
         split = dataset.split_oos_by_date(self.oos_start_date, df=dataset.df)
         print(f"Train/CV size: {split.T_train}, OOS test size: {split.T_test}")
         Q = 4
-        # 2. Tune hyperparameters with MFV
+        # 2. Prepare parameter grid
+        if self.model_class == RFModel:
+            self.param_grid = RF_PARAM_GRID
+        elif self.model_class == XGBModel:
+            self.param_grid = XGB_PARAM_GRID
+        elif self.model_class == NPRegimeModel:
+            T_train, d_train = split.X_train.shape
+            self.param_grid = {
+                "bandwidth": create_precentered_grid(T=T_train, d=d_train),
+            }
+        else:
+            raise ValueError(f"Parameter grid not defined for model class {self.model_class}")
+
+
+
+        # 3. Tune hyperparameters with MFV
         mfv = MFVValidator(Q=Q)
         param_list = expand_grid(self.param_grid)
         best_params, best_mfv, _ = mfv.grid_search(
@@ -89,7 +112,7 @@ class ExperimentRunner:
         )
         print(f"Best params for {self.model_name}: {best_params} (MFV MSE: {best_mfv:.6f})")
 
-        # 3. Fit final model and get predictions
+        # 4. Fit final model and get predictions
         final_model = self.model_class(**best_params)
         final_model.fit(split.X_train, split.y_train)
 
@@ -105,11 +128,23 @@ class ExperimentRunner:
 
         y_full_pred = np.concatenate([pred_train, pred_test])
 
+        # 4. Perform Bias-Variance Decomposition
+        print("\n--- Starting Bias-Variance Decomposition ---")
+        avg_mse, avg_bias_sq, avg_variance = bias_variance_decomposition(
+            model_class=self.model_class,
+            hyperparams=best_params,
+            X_train=split.X_train,
+            y_train=split.y_train,
+            X_test=split.X_test,
+            y_test=split.y_test,
+            n_bootstrap_rounds=self.n_bootstrap_rounds,
+        )
+
         # 4. Evaluate and save all artifacts
-        self._save_artifacts(dataset, split.y_test, y_full_pred, final_model, best_params, best_mfv)
+        self._save_artifacts(dataset, split.y_test, y_full_pred, final_model, best_params, best_mfv, avg_mse, avg_bias_sq, avg_variance)
         print(f"Successfully completed run for {self.model_name}.")
 
-    def _save_artifacts(self, dataset, y_test, y_full_pred, model, best_params, best_mfv):
+    def _save_artifacts(self, dataset, y_test, y_full_pred, model, best_params, best_mfv, bv_mse, bv_bias_sq, bv_variance):
         """Saves all model outputs to the unique run directory."""
         # 1. Evaluate OOS performance
         oos_metrics_original = evaluate_forecast(y_test, pd.Series(y_full_pred[-len(y_test):], index=y_test.index))
@@ -133,6 +168,7 @@ class ExperimentRunner:
             "target": self.target_col,
             "best_hyperparameters": best_params,
             "mfv_best_score": best_mfv,
+            "bias_variance_rounds": self.n_bootstrap_rounds,
         }
         if self.kernel_name:
             run_config["kernel"] = self.kernel_name
@@ -146,6 +182,25 @@ class ExperimentRunner:
         pd.DataFrame({"date": dataset.dates, "y_pred": y_full_pred}).to_csv(os.path.join(self.output_dir, "predictions.csv"), index=False)
         with open(os.path.join(self.output_dir, "oos_metrics.json"), "w") as f:
             json.dump(oos_metrics, f, indent=4)
+
+        # Save bias-variance decomposition results
+        decomposition_results = {
+            "oos_mse_from_bvd": bv_mse,
+            "bias_squared": bv_bias_sq,
+            "variance": bv_variance,
+            # The "plain bias" is the average error, sqrt(bias_squared) is its magnitude.
+            # We can't recover the sign, but we can show the non-squared bias magnitude.
+            "bias_plain": np.sqrt(bv_bias_sq),
+        }
+        with open(os.path.join(self.output_dir, "bias_variance_decomposition.json"), "w") as f:
+            json.dump(decomposition_results, f, indent=4)
+        
+        print("\n--- Bias-Variance Decomposition Results ---")
+        print(f"  MSE (from BVD): {bv_mse:.6f}")
+        print(f"  Bias^2:         {bv_bias_sq:.6f}")
+        print(f"  Variance:       {bv_variance:.6f}")
+        # The sum of Bias^2 and Variance should be close to the MSE.
+        print(f"  Bias^2 + Var:   {bv_bias_sq + bv_variance:.6f}")
 
         plot_forecast(
             df=dataset.df, target_col=self.target_col, y_pred=y_full_pred,

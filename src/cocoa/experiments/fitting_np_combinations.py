@@ -72,7 +72,6 @@ if __name__ == "__main__":
             model_class=NPModelPartial,
             feature_cols=features,
             target_col=DEFAULT_TARGET_COL,
-            param_grid=param_grid,
             data_path=PROCESSED_DATA_PATH,
             oos_start_date=OOS_START_DATE,
             kernel_name=kernel.__class__.__name__,

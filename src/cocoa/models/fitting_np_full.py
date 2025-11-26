@@ -8,24 +8,12 @@ from .assets import (
     DEFAULT_FEATURE_COLS,  # Using same features as RF/XGB for comparability
     DEFAULT_TARGET_COL,
 )
-from .bandwidth import create_precentered_grid
 
 # To create the pre-centered bandwidth grid, we need the dimensions of the
 # training data (T, d). We load the dataset here to get those values before
 # the ExperimentRunner is instantiated. While this means loading data twice,
 # it's a simple approach that avoids modifying the core runner logic.
-dataset = CocoaDataset(
-    csv_path=PROCESSED_DATA_PATH,
-    feature_cols=DEFAULT_FEATURE_COLS,
-    target_col=DEFAULT_TARGET_COL,
-)
-split = dataset.split_oos_by_date(OOS_START_DATE)
-T_train, d_train = split.X_train.shape
 
-# Define a parameter grid for the bandwidth 'h'.
-NP_PARAM_GRID = {
-    "bandwidth": create_precentered_grid(T=T_train, d=d_train),
-}
 
 if __name__ == "__main__":
     # The NPRegimeModel requires kernel and local_engine objects at initialization.
@@ -46,7 +34,6 @@ if __name__ == "__main__":
         model_class=NPModelPartial,
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
-        param_grid=NP_PARAM_GRID,
         data_path=PROCESSED_DATA_PATH,
         oos_start_date=OOS_START_DATE,
         kernel_name=kernel.__class__.__name__,
