@@ -1,30 +1,19 @@
 from functools import partial
 
 from ..experiments.runner import ExperimentRunner
-from . import NPRegimeModel, GaussianKernel, LocalPolynomialEngine, CocoaDataset
+from . import NPRegimeModel, GaussianKernel, LocalPolynomialEngine
 from .assets import (
     PROCESSED_DATA_PATH,
     OOS_START_DATE,
     DEFAULT_FEATURE_COLS,  # Using same features as RF/XGB for comparability
     DEFAULT_TARGET_COL,
+    BREAK_DATE,
 )
-from .bandwidth import create_precentered_grid
-
-# To create the pre-centered bandwidth grid, we need the dimensions of the
-# training data (T, d). We load the dataset here to get those values before
-# the ExperimentRunner is instantiated. While this means loading data twice,
-# it's a simple approach that avoids modifying the core runner logic.
-dataset = CocoaDataset(
-    csv_path=PROCESSED_DATA_PATH,
-    feature_cols=DEFAULT_FEATURE_COLS,
-    target_col=DEFAULT_TARGET_COL,
-)
-split = dataset.split_oos_by_date(OOS_START_DATE)
-T_train, d_train = split.X_train.shape
 
 # Define a parameter grid for the bandwidth 'h'.
+# These values are just a starting point; a wider or finer grid may be needed.
 NP_PARAM_GRID = {
-    "bandwidth": create_precentered_grid(T=T_train, d=d_train),
+    "bandwidth": [0.1, 0.25, 0.5, 0.75, 1.0, 1.5],
 }
 
 if __name__ == "__main__":
@@ -42,7 +31,7 @@ if __name__ == "__main__":
 
     # 3. Configure and run the Non-Parametric experiment
     np_experiment = ExperimentRunner(
-        model_name="NP_LL_Full",
+        model_name="NP_LL_Post",
         model_class=NPModelPartial,
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
@@ -51,6 +40,7 @@ if __name__ == "__main__":
         oos_start_date=OOS_START_DATE,
         kernel_name=kernel.__class__.__name__,
         poly_order=engine.order,
+        sample_start_date=BREAK_DATE,
     )
     np_experiment.run()
     

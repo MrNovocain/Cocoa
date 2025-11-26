@@ -6,6 +6,7 @@ from ..models.assets import (
     XGB_FEATURE_COLS,
     XGB_TARGET_COL,
     XGB_PARAM_GRID,
+    BREAK_DATE
 )
  
 if __name__ == "__main__":
@@ -18,5 +19,6 @@ if __name__ == "__main__":
         param_grid=XGB_PARAM_GRID,
         data_path=PROCESSED_DATA_PATH,
         oos_start_date=OOS_START_DATE,
+        sample_start_date= BREAK_DATE
     )
     xgb_experiment.run()

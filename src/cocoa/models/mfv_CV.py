@@ -25,10 +25,13 @@ class MFVValidator:
           (expanding window).
     """
 
-    def __init__(self, Q: int = 5, block_size: int = 200):
+    def __init__(self, Q: int = 5):
         self.Q = Q
-        self.block_size = block_size
+        self.block_size = None
 
+    def _set_block_size(self, T: int):
+        self.block_size = T // (self.Q + 1)
+        print(f"Set block size to {self.block_size} for training length {T} and Q={self.Q}.")   
     def score(
         self,
         model_class: Type[BaseModel],
@@ -51,7 +54,8 @@ class MFVValidator:
             X_train = pd.DataFrame(X_train)
         if not hasattr(y_train, "iloc"):
             y_train = pd.Series(y_train)
-
+        if self.block_size is None:
+            raise ValueError("block_size must be set before calling score().")
         T = len(X_train)
         total_block_length = self.Q * self.block_size
 
@@ -64,8 +68,8 @@ class MFVValidator:
 
         for q in range(self.Q):
             # q-th validation block within CV region
-            val_start = cv_start + q * self.block_size
-            val_end = val_start + self.block_size  # exclusive
+            val_start = cv_start + q * block_size
+            val_end = val_start + block_size  # exclusive
 
             # Training block: all observations strictly before validation block
             train_end = val_start  # exclusive
@@ -100,7 +104,11 @@ class MFVValidator:
             best_params: dict
             best_score: float
             all_results: list of {"params": ..., "mfv_mse": ...}
+
         """
+        T = len(X_train)
+        self._set_block_size(T)
+
         best_params = None
         best_score = np.inf
         all_results: List[Dict[str, Any]] = []

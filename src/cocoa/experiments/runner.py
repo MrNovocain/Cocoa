@@ -38,6 +38,7 @@ class ExperimentRunner:
         param_grid: Dict[str, List],
         data_path: str,
         oos_start_date: str,
+        sample_start_date: str|None = None,
         kernel_name: str | None = None,
         poly_order: int | None = None,
         output_base_dir: str = "w:/Research/NP/Cocoa/output/cocoa_forecast",
@@ -48,6 +49,7 @@ class ExperimentRunner:
         self.target_col = target_col
         self.param_grid = param_grid
         self.data_path = data_path
+        self.sample_start_date = sample_start_date
         self.oos_start_date = oos_start_date
         self.kernel_name = kernel_name
         self.poly_order = poly_order
@@ -62,11 +64,15 @@ class ExperimentRunner:
         """Executes the full experiment pipeline."""
         # 1. Load and split data
         dataset = CocoaDataset(self.data_path, self.feature_cols, self.target_col)
-        split = dataset.split_oos_by_date(self.oos_start_date)
+        dataset.trim_data_by_start_date(self.sample_start_date)
+        
+        # Pass the (potentially trimmed) dataframe to the splitting method
+        # The trimmed dataframe is in the .df attribute
+        split = dataset.split_oos_by_date(self.oos_start_date, df=dataset.df)
         print(f"Train/CV size: {split.T_train}, OOS test size: {split.T_test}")
-
+        Q = 4
         # 2. Tune hyperparameters with MFV
-        mfv = MFVValidator(Q=5, block_size=200)
+        mfv = MFVValidator(Q=Q)
         param_list = expand_grid(self.param_grid)
         best_params, best_mfv, _ = mfv.grid_search(
             model_class=self.model_class,
@@ -115,7 +121,7 @@ class ExperimentRunner:
             "model_name": self.model_name,
             "run_timestamp": os.path.basename(self.output_dir).split('_')[0],
             "test_set_start_date": self.oos_start_date,
-            "structural_break_time": "not applied",
+            "structural_break_time": self.sample_start_date if self.sample_start_date else "not applied",
             "regressors": self.feature_cols,
             "target": self.target_col,
             "best_hyperparameters": best_params,

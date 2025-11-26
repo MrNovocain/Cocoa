@@ -8,22 +8,22 @@ for different models.
 # ============================================================
 # General Experiment Setup
 # ============================================================
-
+BREAK_DATE = "2022-07-05"
 OOS_START_DATE = "2024-11-29"
 PROCESSED_DATA_PATH = "w:/Research/NP/Cocoa/data/processed/cocoa_ghana_full.csv"
 
-# ============================================================
-# Random Forest (RF) Model Configuration
-# ============================================================
-
-RF_FEATURE_COLS = [
+DEFAULT_FEATURE_COLS = [
     "PRCP_anom_mean",
     "TAVG_anom_mean",
     "PRCP_anom_std",
     "N_stations",
     "log_price_lagt",
 ]
-RF_TARGET_COL = "log_return"
+DEFAULT_TARGET_COL = "log_return"
+
+# ============================================================
+# Random Forest (RF) Model Configuration
+# ============================================================
 
 RF_PARAM_GRID = {
     "n_estimators": [200, 500],
@@ -51,3 +51,5 @@ XGB_PARAM_GRID = {
     "learning_rate": [0.05, 0.1],
     "subsample": [0.7, 1.0],
 }
+
+NP_BANDWIDTH_GRID = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
