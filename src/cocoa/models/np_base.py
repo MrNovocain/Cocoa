@@ -12,15 +12,6 @@ class BaseKernel(ABC):
         ...
 
 
-class BaseBandwidthSelector(ABC):
-    """Base class for bandwidth selection methods."""
-
-    @abstractmethod
-    def select_bandwidth(self, X: pd.DataFrame, y: pd.Series) -> float:
-        """Selects the optimal bandwidth."""
-        ...
-
-
 class BaseLocalEngine(ABC):
     """Base class for local polynomial regression engines."""
 

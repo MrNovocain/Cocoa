@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 from .base_model import BaseModel
-from .np_base import BaseKernel, BaseBandwidthSelector, BaseLocalEngine
+from .np_base import BaseKernel, BaseLocalEngine
 
 
 class NPRegimeModel(BaseModel):
@@ -20,16 +20,14 @@ class NPRegimeModel(BaseModel):
         self,
         kernel: BaseKernel,
         local_engine: BaseLocalEngine,
-        bandwidth_selector: BaseBandwidthSelector | None = None,
         bandwidth: float | None = None,
     ):
         super().__init__()
-        if bandwidth is None and bandwidth_selector is None:
-            raise ValueError("Must provide either a fixed 'bandwidth' or a 'bandwidth_selector'.")
+        if bandwidth is None:
+            raise ValueError("Must provide a fixed 'bandwidth'.")
 
         self.kernel = kernel
         self.local_engine = local_engine
-        self.bandwidth_selector = bandwidth_selector
         self.h = bandwidth  # Bandwidth
 
         # Training data for the regime will be stored here
@@ -42,10 +40,6 @@ class NPRegimeModel(BaseModel):
         """
         self._X_train = X.copy()
         self._y_train = y.copy()
-
-        if self.bandwidth_selector:
-            self.h = self.bandwidth_selector.select_bandwidth(self._X_train, self._y_train)
-
         self._is_fitted = True
         return self
 
@@ -57,5 +51,5 @@ class NPRegimeModel(BaseModel):
         predictions = self.local_engine.fit(self._X_train, self._y_train, X, self.h, self.kernel)
         return predictions
 
-        super().__init__()
+
         

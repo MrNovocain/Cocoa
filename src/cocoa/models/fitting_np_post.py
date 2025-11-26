@@ -40,7 +40,7 @@ if __name__ == "__main__":
     engine = LocalPolynomialEngine(order=1) # Local Linear
 
     # 2. Create a partial constructor for the ExperimentRunner to use
-    NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=engine, bandwidth_selector="post_break")
+    NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=engine)
 
     # 3. Configure and run the Non-Parametric experiment
     np_experiment = ExperimentRunner(

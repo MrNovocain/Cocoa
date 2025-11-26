@@ -6,7 +6,7 @@ from datetime import datetime
 from joblib import dump
 from typing import List, Dict, Any, Type, Tuple
 
-from cocoa.experiments.fitting_np_combinations import T_train
+from functools import partial
 from cocoa.models.bandwidth import create_precentered_grid
 from cocoa.models.assets import RF_PARAM_GRID, XGB_PARAM_GRID
 from ..models import RFModel, XGBModel, NPRegimeModel
@@ -73,37 +73,44 @@ class ExperimentRunner:
         """Executes the full experiment pipeline."""
         # 1. Load and split data
         dataset = CocoaDataset(self.data_path, self.feature_cols, self.target_col)
-        
+        print(f"indexing from {self.sample_start_index} ")
         if self.sample_start_index is not None:
             start_date = dataset.get_date_from_1_based_index(self.sample_start_index)
         else:
             start_date = None
 
         dataset.trim_data_by_start_date(start_date)
-        
+        print(f"New start date after trimming: {dataset.dates.iloc[0].date()}")
         # Pass the (potentially trimmed) dataframe to the splitting method
         # The trimmed dataframe is in the .df attribute
         split = dataset.split_oos_by_date(self.oos_start_date, df=dataset.df)
         print(f"Train/CV size: {split.T_train}, OOS test size: {split.T_test}")
         Q = 4
+
+        # Determine the base model class, handling functools.partial
+        model_class_to_check = self.model_class
+        if isinstance(model_class_to_check, partial):
+            model_class_to_check = model_class_to_check.func
+
         # 2. Prepare parameter grid
-        if self.model_class == RFModel:
+        if model_class_to_check == RFModel:
             self.param_grid = RF_PARAM_GRID
-        elif self.model_class == XGBModel:
+        elif model_class_to_check == XGBModel:
             self.param_grid = XGB_PARAM_GRID
-        elif self.model_class == NPRegimeModel:
+        elif model_class_to_check == NPRegimeModel:
             T_train, d_train = split.X_train.shape
             self.param_grid = {
                 "bandwidth": create_precentered_grid(T=T_train, d=d_train),
             }
-        else:
-            raise ValueError(f"Parameter grid not defined for model class {self.model_class}")
 
 
 
         # 3. Tune hyperparameters with MFV
         mfv = MFVValidator(Q=Q)
-        param_list = expand_grid(self.param_grid)
+        if self.param_grid is None:
+            raise ValueError("Parameter grid has not been set.")
+        else:
+            param_list = expand_grid(self.param_grid) # pyright: ignore[reportArgumentType]
         best_params, best_mfv, _ = mfv.grid_search(
             model_class=self.model_class,
             X_train=split.X_train,
