@@ -7,7 +7,8 @@ from .assets import (
     OOS_START_DATE,
     DEFAULT_FEATURE_COLS,  # Using same features as RF/XGB for comparability
     DEFAULT_TARGET_COL,
-    BREAK_DATE,
+    # BREAK_DATE,
+    Break_ID_ONE_BASED,
 )
 
 # Define a parameter grid for the bandwidth 'h'.
@@ -40,7 +41,7 @@ if __name__ == "__main__":
         oos_start_date=OOS_START_DATE,
         kernel_name=kernel.__class__.__name__,
         poly_order=engine.order,
-        sample_start_date=BREAK_DATE,
+        sample_start_index=Break_ID_ONE_BASED,
     )
     np_experiment.run()
     

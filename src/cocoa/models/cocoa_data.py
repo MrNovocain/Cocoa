@@ -51,6 +51,7 @@ class CocoaDataset:
     def trim_data_by_start_date(self, start_date: Optional[str | pd.Timestamp]=None):
         """Discard observations before a given start date."""
         if start_date is None:
+            print("no break assumed")
             pass # No trimming needed
         else:
             start_date = pd.to_datetime(start_date)
@@ -59,6 +60,7 @@ class CocoaDataset:
             self.dates = self.df["date"].copy()
             self.X = self.df[self.feature_cols].copy()
             self.y = self.df[self.target_col].copy()
+            print(f"Data trimmed to start from {start_date.date()}. New length: {len(self.df)}")
 
     def split_oos_by_date(self, oos_start_date: str | pd.Timestamp, df: Optional[pd.DataFrame] = None) -> TrainTestSplit:
         """Split into (train+CV) and final OOS test window by calendar date.
@@ -104,3 +106,11 @@ class CocoaDataset:
         X_w = self.X.loc[mask].reset_index(drop=True)
         y_w = self.y.loc[mask].reset_index(drop=True)
         return X_w, y_w
+
+    def get_date_from_1_based_index(self, index_1_based: int) -> pd.Timestamp:
+        """
+        Returns the date corresponding to a 1-based index in the dataset.
+        """
+        if not (1 <= index_1_based <= len(self.dates)):
+            raise ValueError(f"1-based index {index_1_based} is out of bounds for dataset of length {len(self.dates)}.")
+        return self.dates.iloc[index_1_based - 1]

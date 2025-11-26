@@ -8,17 +8,18 @@ for different models.
 # ============================================================
 # General Experiment Setup
 # ============================================================
-BREAK_DATE = "2022-07-05"
+Break_ID_ONE_BASED = 5101
+# BREAK_DATE = "2022-07-05"
 OOS_START_DATE = "2024-11-29"
 PROCESSED_DATA_PATH = "w:/Research/NP/Cocoa/data/processed/cocoa_ghana_full.csv"
 
 DEFAULT_FEATURE_COLS = [
-    "PRCP_anom_mean",
-    "TAVG_anom_mean",
-    # "PRCP_anom_std",
+    # "PRCP_anom_mean",
+    # "TAVG_anom_mean",
+    "PRCP_anom_std",
     # "TAVG_anom_std",
     "log_price_lagt",
-    "N_stations",
+    # "N_stations",
 ]
 DEFAULT_TARGET_COL = "log_return"
 

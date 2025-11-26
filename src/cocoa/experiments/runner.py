@@ -38,7 +38,7 @@ class ExperimentRunner:
         param_grid: Dict[str, List],
         data_path: str,
         oos_start_date: str,
-        sample_start_date: str|None = None,
+        sample_start_index: int | None = None,
         kernel_name: str | None = None,
         poly_order: int | None = None,
         output_base_dir: str = "w:/Research/NP/Cocoa/output/cocoa_forecast",
@@ -49,10 +49,11 @@ class ExperimentRunner:
         self.target_col = target_col
         self.param_grid = param_grid
         self.data_path = data_path
-        self.sample_start_date = sample_start_date
+        self.sample_start_index = sample_start_index
         self.oos_start_date = oos_start_date
         self.kernel_name = kernel_name
         self.poly_order = poly_order
+        self.start_date = None
 
         # --- Create a unique directory for this experiment run ---
         run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -64,7 +65,13 @@ class ExperimentRunner:
         """Executes the full experiment pipeline."""
         # 1. Load and split data
         dataset = CocoaDataset(self.data_path, self.feature_cols, self.target_col)
-        dataset.trim_data_by_start_date(self.sample_start_date)
+        
+        if self.sample_start_index is not None:
+            start_date = dataset.get_date_from_1_based_index(self.sample_start_index)
+        else:
+            start_date = None
+
+        dataset.trim_data_by_start_date(start_date)
         
         # Pass the (potentially trimmed) dataframe to the splitting method
         # The trimmed dataframe is in the .df attribute
@@ -121,7 +128,7 @@ class ExperimentRunner:
             "model_name": self.model_name,
             "run_timestamp": os.path.basename(self.output_dir).split('_')[0],
             "test_set_start_date": self.oos_start_date,
-            "structural_break_time": self.sample_start_date if self.sample_start_date else "not applied",
+            "structural_break_time": self.sample_start_index if self.sample_start_index else "not applied",
             "regressors": self.feature_cols,
             "target": self.target_col,
             "best_hyperparameters": best_params,
@@ -142,5 +149,6 @@ class ExperimentRunner:
 
         plot_forecast(
             df=dataset.df, target_col=self.target_col, y_pred=y_full_pred,
-            model_label=self.model_name, output_path=os.path.join(self.output_dir, "oos_forecast.png")
+            model_label=self.model_name, output_path=os.path.join(self.output_dir, "oos_forecast.png"),
+            oos_start_date=self.oos_start_date
         )

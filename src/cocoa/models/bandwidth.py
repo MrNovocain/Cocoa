@@ -44,7 +44,7 @@ def create_precentered_grid(
 
     # 2. Define the multiplicative grid for the adjustment factor (m)
     if multipliers is None:
-        logs = np.linspace(-1.0, 2.0, num=10)
+        logs = np.linspace(-1.0, 1.0, num=10)
         mults = np.power(10.0, logs)
     else:
         mults = np.asarray(multipliers)
