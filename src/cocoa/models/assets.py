@@ -15,9 +15,10 @@ PROCESSED_DATA_PATH = "w:/Research/NP/Cocoa/data/processed/cocoa_ghana_full.csv"
 DEFAULT_FEATURE_COLS = [
     "PRCP_anom_mean",
     "TAVG_anom_mean",
-    "PRCP_anom_std",
-    "N_stations",
+    # "PRCP_anom_std",
+    # "TAVG_anom_std",
     "log_price_lagt",
+    "N_stations",
 ]
 DEFAULT_TARGET_COL = "log_return"
 

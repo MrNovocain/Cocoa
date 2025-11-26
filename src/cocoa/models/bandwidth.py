@@ -37,14 +37,14 @@ def create_precentered_grid(
         raise ValueError("Sample size T must be positive.")
     if d < 0:
         raise ValueError("Dimension d cannot be negative.")
-
+    print(f"Creating bandwidth grid with T={T}, d={d}")
     # 1. Calculate the theoretical / rule-of-thumb baseline bandwidth (h_0)
     # For local constant/linear regression, the classical optimal rate is T^(-1/(d+4)).
     h0 = C * (T ** (-1.0 / (d + 4.0)))
 
     # 2. Define the multiplicative grid for the adjustment factor (m)
     if multipliers is None:
-        logs = np.linspace(-2.0, 5.0, num=10)
+        logs = np.linspace(-1.0, 2.0, num=10)
         mults = np.power(10.0, logs)
     else:
         mults = np.asarray(multipliers)
