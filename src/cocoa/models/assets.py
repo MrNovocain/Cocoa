@@ -8,7 +8,7 @@ for different models.
 # ============================================================
 # General Experiment Setup
 # ============================================================
-Break_ID_ONE_BASED = 6530
+Break_ID_ONE_BASED = 5334
 # BREAK_DATE = "2022-07-05"
 OOS_START_DATE = "2024-11-29"
 PROCESSED_DATA_PATH = "w:/Research/NP/Cocoa/data/processed/cocoa_ghana_full.csv"

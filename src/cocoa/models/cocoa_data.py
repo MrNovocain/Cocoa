@@ -91,3 +91,28 @@ class CocoaDataset:
         if matches.empty:
             raise ValueError(f"Date {date.date()} not found in the dataset.")
         return matches.index[0] + 1
+
+    def split_oos_by_date(self, oos_start_date: str | pd.Timestamp) -> "TrainTestSplit":
+        """Splits the dataframe into train and test sets based on a date."""
+        oos_start_date = pd.to_datetime(oos_start_date)
+        mask_test = self.df["date"] >= oos_start_date
+
+        if not mask_test.any():
+            raise ValueError("No observations on/after the chosen OOS start date.")
+
+        test_start_idx = self.df.index[mask_test][0]
+
+        X_train = self.df.loc[:test_start_idx-1, self.feature_cols].reset_index(drop=True)
+        y_train = self.df.loc[:test_start_idx-1, self.target_col].reset_index(drop=True)
+
+        X_test = self.df.loc[test_start_idx:, self.feature_cols].reset_index(drop=True)
+        y_test = self.df.loc[test_start_idx:, self.target_col].reset_index(drop=True)
+
+        return TrainTestSplit(
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            y_test=y_test,
+            T_train=len(X_train),
+            T_test=len(X_test),
+        )

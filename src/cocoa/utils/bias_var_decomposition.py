@@ -3,6 +3,7 @@ import pandas as pd
 from typing import Type, Any, Dict, Tuple
 
 from ..models.base_model import BaseModel
+from ..models import NPConvexCombinationModel
 
 
 def bias_variance_decomposition(
@@ -66,7 +67,37 @@ def bias_variance_decomposition(
         y_boot = y_train.iloc[bootstrap_indices]
 
         # 2. Instantiate and fit a new model on the bootstrap sample
-        model = model_class(**hyperparams)
+        if model_class == NPConvexCombinationModel:
+            # Special handling for the convex combination model, which requires
+            # constructing its sub-models before instantiation.
+            from ..models import NPRegimeModel, GaussianKernel, LocalPolynomialEngine
+            from ..models.assets import Break_ID_ONE_BASED
+
+            kernel = GaussianKernel()
+            poly_order = hyperparams.get('poly_order', 1)
+            engine = LocalPolynomialEngine(order=poly_order)
+            post_start_index = Break_ID_ONE_BASED - 1
+
+            model_full = NPRegimeModel(
+                kernel=kernel,
+                local_engine=engine,
+                bandwidth=hyperparams['bandwidth_full']
+            )
+            model_post = NPRegimeModel(
+                kernel=kernel,
+                local_engine=engine,
+                bandwidth=hyperparams['bandwidth_post']
+            )
+            
+            model = model_class(
+                model_full=model_full,
+                model_post=model_post,
+                post_start_index=post_start_index,
+                gamma=hyperparams['gamma']
+            )
+        else:
+            # Standard instantiation for all other models
+            model = model_class(**hyperparams)
         model.fit(X_boot, y_boot)
 
         # 3. Predict on the original, fixed test set
