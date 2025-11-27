@@ -62,11 +62,8 @@ class LocalPolynomialEngine(BaseLocalEngine):
         
         # Calculate kernel weights
         u = distances / h
-        # The kernel function needs to handle torch tensors now.
-        # For full GPU acceleration, the kernel itself should be implemented in torch
-        # and a check like `hasattr(kernel, "torch_weight")` could be used.
-        w_np = kernel.weight(u.cpu().numpy())
-        W = torch.from_numpy(w_np).float().to(self.device) # W has shape (n_eval, n_train)
+        # The kernel function now handles torch tensors directly.
+        W = kernel.weight(u) # W has shape (n_eval, n_train)
 
         # Handle cases where the kernel window is effectively empty to avoid nonsense predictions.
         # We use a nearest-neighbor fallback for these points.

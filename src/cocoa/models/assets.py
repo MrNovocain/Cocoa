@@ -55,3 +55,8 @@ XGB_PARAM_GRID = {
 }
 
 NP_BANDWIDTH_GRID = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+
+
+
+### Grid search for least bias break date is"2019-07-15"
+BREAK_DATE_LB_DATE = "2019-07-15"
