@@ -1,0 +1,40 @@
+{
+    "model_name": "RF",
+    "run_timestamp": "20251127",
+    "test_set_start_date": "2025-01-02",
+    "structural_break_index": "not applied",
+    "structural_break_date": "not applied",
+    "regressors": [
+        "PRCP_anom_mean",
+        "TAVG_anom_mean"
+    ],
+    "target": "log_return",
+    "hyperparameter_grid": {
+        "n_estimators": [
+            200,
+            500
+        ],
+        "max_depth": [
+            3,
+            5,
+            null
+        ],
+        "min_samples_leaf": [
+            1,
+            5,
+            20
+        ],
+        "max_features": [
+            "sqrt",
+            "log2"
+        ]
+    },
+    "optimal_hyperparameters": {
+        "n_estimators": 500,
+        "max_depth": 3,
+        "min_samples_leaf": 1,
+        "max_features": "sqrt"
+    },
+    "mfv_best_score": 0.0008120015188470558,
+    "bias_variance_rounds": 50
+}

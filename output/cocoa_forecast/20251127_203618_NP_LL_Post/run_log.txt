@@ -1,0 +1,21 @@
+Creating bandwidth grid with T=1394, d=2
+Generated bandwidth grid: [0.02991963 0.04990895 0.08325315 0.13887462 0.23165682 0.38642687
+ 0.64459887 1.07525572 1.79363464 2.9919629 ]
+Set block size to 278 for training length 1394 and Q=4.
+Params: {'bandwidth': np.float64(0.029919629024072372)} MFV MSE: 0.0030489019120665778
+Params: {'bandwidth': np.float64(0.04990894924788159)} MFV MSE: 0.003010506266921763
+Params: {'bandwidth': np.float64(0.08325314505148174)} MFV MSE: 0.003084187139645853
+Params: {'bandwidth': np.float64(0.1388746159839711)} MFV MSE: 0.0029327141968439495
+Params: {'bandwidth': np.float64(0.23165682152631406)} MFV MSE: 0.002929631418649853
+Params: {'bandwidth': np.float64(0.38642686843410273)} MFV MSE: 0.0029105240105601485
+Params: {'bandwidth': np.float64(0.644598866823463)} MFV MSE: 0.002903069712765165
+Params: {'bandwidth': np.float64(1.0752557160267675)} MFV MSE: 0.0028975917282917907
+Params: {'bandwidth': np.float64(1.793634637531685)} MFV MSE: 0.0028959056279296955
+Params: {'bandwidth': np.float64(2.991962902407237)} MFV MSE: 0.0028953450171364395
+Best params for NP_LL_Post: {'bandwidth': np.float64(2.991962902407237)} (MFV MSE: 0.002895)
+
+--- Bias-Variance Decomposition is temporarily disabled ---
+OOS Metrics: {'MSFE': 0.0009697731436279107, 'RMSE': np.float64(0.031141180832266312), 'MAE': 0.023131296027393125}
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_203618_NP_LL_Post\full_forecast.png
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_203618_NP_LL_Post\oos_forecast.png
+Successfully completed run for NP_LL_Post.

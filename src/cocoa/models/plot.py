@@ -37,11 +37,18 @@ def plot_forecast(
         )
 
     plot_df = df[["date", "log_price"]].copy()
-    plot_df["log_return_hat"] = y_pred
+
+    # --- FORECASTING PLOT FIX ---
+    # The model predicts the return for t+1 using info from t.
+    # So, y_pred[t] is a forecast for log_return[t+1].
+    # To reconstruct the price level for time t, we need the predicted return from t-1.
+    # We shift the predictions forward to align them correctly.
+    log_return_hat_series = pd.Series(y_pred, index=df.index).shift(1)
+    plot_df["log_return_hat"] = log_return_hat_series
 
     # Reconstruct the predicted log price level
-    # log_price_hat(t) = log_price(t-1) + log_return_hat(t)
-    # The feature 'log_price_lagt' is log_price(t-1)
+    # log_price_hat(t) = log_price(t-1) + log_return_hat(t) where log_return_hat(t) is the forecast made at t-1.
+    # The feature 'log_price_lagt' is log_price(t-1).
     if "log_price_lagt" not in df.columns:
         raise KeyError("The DataFrame must contain 'log_price_lagt' to reconstruct price forecasts.")
     plot_df["log_price_hat"] = df["log_price_lagt"] + plot_df["log_return_hat"]

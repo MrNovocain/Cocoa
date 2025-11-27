@@ -31,7 +31,7 @@ if __name__ == "__main__":
     results = []
 
     # 3. Configure and run the Non-Parametric experiment in a loop
-    for trimmed_date in range(1, 6735, 100):
+    for trimmed_date in range(1, 6735, 200):
         model_name = f"NP_LL_Post_Trim_{trimmed_date}"
         min_train_size = 12  # Define a minimum size for the training set
         print(f"\n--- Running experiment for trimmed_date: {trimmed_date} ---")

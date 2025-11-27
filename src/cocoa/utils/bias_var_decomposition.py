@@ -63,36 +63,37 @@ def bias_variance_decomposition(
         bootstrap_indices = rng.choice(
             n_train_samples, size=n_train_samples, replace=True
         )
-        X_boot = X_train.iloc[bootstrap_indices]
-        y_boot = y_train.iloc[bootstrap_indices]
+        # We use .loc to preserve the original index, which is crucial for
+        # the NPConvexCombinationModel to correctly split pre/post break data.
+        X_boot = X_train.loc[X_train.index[bootstrap_indices]]
+        y_boot = y_train.loc[y_train.index[bootstrap_indices]]
 
         # 2. Instantiate and fit a new model on the bootstrap sample
         if model_class == NPConvexCombinationModel:
             # Special handling for the convex combination model, which requires
             # constructing its sub-models before instantiation.
             from ..models import NPRegimeModel, GaussianKernel, LocalPolynomialEngine
-            from ..models.assets import Break_ID_ONE_BASED
 
             kernel = GaussianKernel()
             poly_order = hyperparams.get('poly_order', 1)
             engine = LocalPolynomialEngine(order=poly_order)
-            post_start_index = Break_ID_ONE_BASED - 1
 
-            model_full = NPRegimeModel(
+            # Use the correct hyperparameter names from the combo runner
+            model_pre = NPRegimeModel(
                 kernel=kernel,
                 local_engine=engine,
-                bandwidth=hyperparams['bandwidth_full']
+                bandwidth=hyperparams['bandwidth_pre']
             )
             model_post = NPRegimeModel(
                 kernel=kernel,
                 local_engine=engine,
                 bandwidth=hyperparams['bandwidth_post']
             )
-            
+
             model = model_class(
-                model_full=model_full,
+                model_pre=model_pre,
                 model_post=model_post,
-                post_start_index=post_start_index,
+                break_index=hyperparams['break_index'],
                 gamma=hyperparams['gamma']
             )
         else:

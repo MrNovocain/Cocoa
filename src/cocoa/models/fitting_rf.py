@@ -15,8 +15,9 @@ if __name__ == "__main__":
         model_class=RFModel,
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
-        param_grid=RF_PARAM_GRID,
         data_path=PROCESSED_DATA_PATH,
         oos_start_date=OOS_START_DATE,
     )
+    # The ExperimentRunner internally selects the correct parameter grid
+    # based on the model_class, so we don't need to pass it.
     rf_experiment.run()
