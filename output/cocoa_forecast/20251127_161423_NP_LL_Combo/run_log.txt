@@ -1,0 +1,32 @@
+LocalPolynomialEngine will use device: cuda
+
+--- (1/3) Tuning bandwidth for PRE-BREAK model ---
+Creating bandwidth grid with T=5334, d=2
+Generated bandwidth grid: [0.02392349 0.03990678 0.06656853 0.11104299 0.18523088 0.30898373
+ 0.51541592 0.85976558 1.43417542 2.39234879]
+Set block size to 1066 for training length 5334 and Q=4.
+Best bandwidth for PRE-BREAK model: 2.3923
+
+--- (2/3) Tuning bandwidth for POST model ---
+Creating bandwidth grid with T=1338, d=2
+Generated bandwidth grid: [0.03012479 0.05025117 0.08382401 0.13982687 0.23324528 0.38907658
+ 0.64901886 1.0826287  1.80593352 3.01247867]
+Set block size to 267 for training length 1338 and Q=4.
+Best bandwidth for POST model: 0.0838
+
+--- (3/3) Tuning gamma for Convex Combination model ---
+Set block size to 267 for training length 1338 and Q=4.
+Best gamma: 0.00 (MFV MSE: 0.002991), while being close to 1 means more weight on the full model.
+
+--- Starting Bias-Variance Decomposition ---
+Starting bias-variance decomposition with 50 rounds...
+OOS Metrics: {'MSFE': 0.13905391878932538, 'RMSE': np.float64(0.372899341363491), 'MAE': 0.27931114198210377}
+
+--- Bias-Variance Decomposition Results ---
+  MSE (from BVD): 0.129136
+  Bias^2:         0.052678
+  Variance:       0.076458
+  Bias^2 + Var:   0.129136
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_161423_NP_LL_Combo\full_forecast.png
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_161423_NP_LL_Combo\oos_forecast.png
+Successfully completed run for NP_LL_Combo.

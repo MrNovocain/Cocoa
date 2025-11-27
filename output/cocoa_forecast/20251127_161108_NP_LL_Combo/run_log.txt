@@ -1,0 +1,23 @@
+LocalPolynomialEngine will use device: cuda
+
+--- (1/3) Tuning bandwidth for PRE-BREAK model ---
+Creating bandwidth grid with T=5335, d=2
+Generated bandwidth grid: [0.02392274 0.03990554 0.06656645 0.11103953 0.18522509 0.30897407
+ 0.51539982 0.85973872 1.43413062 2.39227405]
+Set block size to 1067 for training length 5335 and Q=4.
+Best bandwidth for PRE-BREAK model: 2.3923
+
+--- (2/3) Tuning bandwidth for POST model ---
+Creating bandwidth grid with T=1337, d=2
+Generated bandwidth grid: [0.03012854 0.05025744 0.08383445 0.1398443  0.23327435 0.38912507
+ 0.64909974 1.08276362 1.80615857 3.01285408]
+Set block size to 267 for training length 1337 and Q=4.
+Best bandwidth for POST model: 0.0838
+
+--- (3/3) Tuning gamma for Convex Combination model ---
+Set block size to 267 for training length 1337 and Q=4.
+Best gamma: 0.00 (MFV MSE: 0.002991), while being close to 1 means more weight on the full model.
+
+--- Starting Bias-Variance Decomposition ---
+Starting bias-variance decomposition with 50 rounds...
+LocalPolynomialEngine will use device: cuda

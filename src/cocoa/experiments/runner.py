@@ -93,6 +93,7 @@ class ExperimentRunner:
         poly_order: int | None = None,
         n_bootstrap_rounds: int = 50,
         save_results: bool = True,
+        param_grid: Dict[str, List] | None = None,
         output_base_dir: str = "w:/Research/NP/Cocoa/output/cocoa_forecast",
     ):
         self.model_name = model_name
@@ -106,22 +107,11 @@ class ExperimentRunner:
         self.poly_order = poly_order
         self.start_date = None
         self.n_bootstrap_rounds = n_bootstrap_rounds
-        self.param_grid = None
+        self.param_grid = param_grid
         self.save_results = save_results
-        self.output_dir = None
         self.data_set = None
         self.split = None
-        self.Q = Q_VALUE
-
-        
-        if self.save_results:
-            # --- Create a unique directory for this experiment run ---
-            run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.output_dir = os.path.join(output_base_dir, f"{run_timestamp}_{self.model_name}")
-            os.makedirs(self.output_dir, exist_ok=True)
-            print(f"Instantiated runner for {self.model_name}. Results will be in:\n{self.output_dir}")
-        else:
-            print(f"Instantiated runner for {self.model_name}. Results will not be saved.")
+        self._setup_output_and_logging(output_base_dir)
 
         # --- Load and prepare data ---
         self.data_set = CocoaDataset(self.data_path, self.feature_cols, self.target_col)
@@ -137,6 +127,19 @@ class ExperimentRunner:
         # --- Split data and store it ---
         self.split = self._split_data(self.data_set.df, self.oos_start_date)
         print(f"Train/CV size: {self.split.T_train}, OOS test size: {self.split.T_test}")
+
+    def _setup_output_and_logging(self, output_base_dir: str):
+        """Helper to create output directory and configure logging."""
+        self.Q = Q_VALUE
+        self.output_dir = None
+        if self.save_results:
+            run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.output_dir = os.path.join(output_base_dir, f"{run_timestamp}_{self.model_name}")
+            os.makedirs(self.output_dir, exist_ok=True)
+            print(f"Instantiated runner for {self.model_name}. Results will be in:\n{self.output_dir}")
+        else:
+            print(f"Instantiated runner for {self.model_name}. Results will not be saved.")
+
 
     def _split_data(self, df: pd.DataFrame, oos_start_date: str | pd.Timestamp) -> TrainTestSplit:
         """Splits the dataframe into train and test sets based on a date."""
@@ -175,8 +178,8 @@ class ExperimentRunner:
             # 4. Perform Bias-Variance Decomposition
             print("\n--- Starting Bias-Variance Decomposition ---")
             avg_mse, avg_bias_sq, avg_variance = bias_variance_decomposition(
-                model_class=self.model_class,
-                hyperparams=best_params,
+                # Pass the final, fitted model as a template for bootstrapping
+                base_model=final_model,
                 X_train=self.split.X_train,
                 y_train=self.split.y_train,
                 X_test=self.split.X_test,
@@ -207,18 +210,12 @@ class ExperimentRunner:
         if isinstance(model_class_to_check, partial):
             model_class_to_check = model_class_to_check.func
 
-        # 2. Prepare parameter grid
-        if model_class_to_check == RFModel:
-            self.param_grid = RF_PARAM_GRID
-        elif model_class_to_check == XGBModel:
-            self.param_grid = XGB_PARAM_GRID
-        elif model_class_to_check == NPRegimeModel:
+        # 2. Prepare parameter grid if not provided
+        if self.param_grid is None and model_class_to_check == NPRegimeModel:
             T_train, d_train = self.split.X_train.shape
             self.param_grid = {
                 "bandwidth": create_precentered_grid(T=T_train, d=d_train),
             }
-
-
 
         # 3. Tune hyperparameters with MFV
         mfv = MFVValidator(Q=Q)
@@ -348,6 +345,11 @@ class ExperimentRunner:
             raise ValueError("Data not split. Cannot determine training set size.")
         return self.split.T_train
 
+    @staticmethod
+    def _calculate_mse(y_true: pd.Series, y_pred: np.ndarray) -> float:
+        """Helper to calculate Mean Squared Error."""
+        return np.mean((y_true.values - y_pred) ** 2)
+
 
 class NPComboExperimentRunner(ExperimentRunner):
     """
@@ -360,38 +362,24 @@ class NPComboExperimentRunner(ExperimentRunner):
     def __init__(self, *args, **kwargs):
         # This __init__ is "standalone". It replicates the necessary setup from
         # ExperimentRunner.__init__ without calling super().__init__() because
-                # the parent's data trimming logic is not suitable for the combo model.
+        # the parent's data trimming logic is not suitable for the combo model.
 
         # --- 1. Replicate property setup from parent ---
-        model_name = kwargs.get("model_name", "NP_LL_Combo")
-        self.model_name = model_name
+        self.model_name = kwargs.get("model_name", "NP_LL_Combo")
         self.model_class = NPConvexCombinationModel
         self.feature_cols = kwargs['feature_cols']
         self.target_col = kwargs['target_col']
         self.data_path = kwargs['data_path']
         self.sample_start_index = kwargs.get('sample_start_index')
         self.oos_start_date = kwargs['oos_start_date']
-        self.kernel_name = kwargs.get('kernel_name')
-        self.poly_order = kwargs.get('poly_order')
+        self.kernel_name = kwargs.get('kernel_name') # pyright: ignore[reportAttributeAccessIssue]
+        self.poly_order = kwargs.get('poly_order') # pyright: ignore[reportAttributeAccessIssue]
         self.n_bootstrap_rounds = kwargs.get('n_bootstrap_rounds', 50)
         self.save_results = kwargs.get('save_results', True)
         self.param_grid = None
         self.split = None
-        self.Q = Q_VALUE
         
-        if self.sample_start_index is None:
-            raise ValueError("NPComboExperimentRunner requires a 'sample_start_index' to define the post-break period.")
-
-        # --- 2. Replicate output directory setup from parent ---
-        output_base_dir = kwargs.get("output_base_dir", "w:/Research/NP/Cocoa/output/cocoa_forecast")
-        if self.save_results:
-            run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.output_dir = os.path.join(output_base_dir, f"{run_timestamp}_{self.model_name}")
-            os.makedirs(self.output_dir, exist_ok=True)
-            print(f"Instantiated runner for {self.model_name}. Results will be in:\n{self.output_dir}")
-        else:
-            self.output_dir = None
-            print(f"Instantiated runner for {self.model_name}. Results will not be saved.")
+        self._setup_output_and_logging(kwargs.get("output_base_dir", "w:/Research/NP/Cocoa/output/cocoa_forecast"))
 
         # --- 3. Custom data handling for combo model ---
         # Load data WITHOUT trimming the start, so "full" model gets all data.
@@ -405,6 +393,47 @@ class NPComboExperimentRunner(ExperimentRunner):
         # from the parent class, which is fine.
         self.split = self._split_data(self.data_set.df, self.oos_start_date)
         print(f"Full train/CV size: {self.split.T_train}, OOS test size: {self.split.T_test}")
+
+    def run(self) -> None:
+        """
+        Executes the full experiment pipeline for the Combo model.
+
+        This overrides the base `run` method to correctly handle the
+        hyperparameter structure required for bias-variance decomposition
+        of the NPConvexCombinationModel.
+        """
+        if self.split is None:
+            raise RuntimeError("Data has not been split. Check runner initialization.")
+
+        def _run_logic():
+            # 1. Fit model using the overridden _fit_model method
+            best_params, best_mfv, final_model, y_full_pred = self._fit_model()
+
+            # 2. Perform Bias-Variance Decomposition
+            print("\n--- Starting Bias-Variance Decomposition ---")
+            avg_mse, avg_bias_sq, avg_variance = bias_variance_decomposition(
+                # Pass the final, fitted model as a template for bootstrapping
+                base_model=final_model,
+                X_train=self.split.X_train,
+                y_train=self.split.y_train,
+                X_test=self.split.X_test,
+                y_test=self.split.y_test,
+                n_bootstrap_rounds=self.n_bootstrap_rounds,
+            )
+
+            # 3. Evaluate and save all artifacts
+            if self.save_results:
+                self._save_artifacts(self.split.y_test, y_full_pred, final_model, best_params, best_mfv, avg_mse, avg_bias_sq, avg_variance)
+                print(f"Successfully completed run for {self.model_name}.")
+
+        # Replicate the logging logic from the parent class instead of calling super().run()
+        # to avoid re-running the incorrect bias-variance decomposition.
+        if self.save_results and self.output_dir:
+            log_path = os.path.join(self.output_dir, "run_log.txt")
+            with redirect_stdout_to_log_file(log_path):
+                _run_logic()
+        else:
+            _run_logic()
 
 
     def _fit_model(self):
@@ -441,25 +470,32 @@ class NPComboExperimentRunner(ExperimentRunner):
         # Partial constructor for the base NP model
         NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=engine)
 
-        # 1. Find best bandwidth for the "full" model
-        print("\n--- (1/3) Tuning bandwidth for FULL model ---")
-        T_full, d_full = X_train_full.shape
-        bw_values_full = create_precentered_grid(T=T_full, d=d_full)
-        bw_grid_full = [{"bandwidth": h} for h in bw_values_full]
-        best_params_full, _, _ = validator.grid_search(
+        # Define pre-break and post-break training sets
+        X_train_pre = X_train_full.iloc[:post_start_index]
+        y_train_pre = y_train_full.iloc[:post_start_index]
+        X_train_post = X_train_full.iloc[post_start_index:]
+        y_train_post = y_train_full.iloc[post_start_index:]
+
+        # 1. Find best bandwidth for the "pre-break" model
+        print("\n--- (1/3) Tuning bandwidth for PRE-BREAK model ---")
+        T_pre, d_pre = X_train_pre.shape
+        if T_pre <= 0:
+            raise ValueError(f"The 'pre' model training set is empty (size={T_pre}). Check 'sample_start_index'.")
+
+        bw_values_pre = create_precentered_grid(T=T_pre, d=d_pre)
+        bw_grid_pre = [{"bandwidth": h} for h in bw_values_pre]
+        best_params_pre, _, _ = validator.grid_search(
             model_class=NPModelPartial,
-            X_train=X_train_full,
-            y_train=y_train_full,
-            param_grid=bw_grid_full,
+            X_train=X_train_pre,
+            y_train=y_train_pre,
+            param_grid=bw_grid_pre,
             verbose=False,
         )
-        h_full = best_params_full['bandwidth']
-        print(f"Best bandwidth for FULL model: {h_full:.4f}")
+        h_pre = best_params_pre['bandwidth']
+        print(f"Best bandwidth for PRE-BREAK model: {h_pre:.4f}")
 
         # 2. Find best bandwidth for the "post" model
         print("\n--- (2/3) Tuning bandwidth for POST model ---")
-        X_train_post = X_train_full.iloc[post_start_index:]
-        y_train_post = y_train_full.iloc[post_start_index:]
         T_post, d_post = X_train_post.shape
 
         if T_post <= 0:
@@ -478,38 +514,43 @@ class NPComboExperimentRunner(ExperimentRunner):
         print(f"Best bandwidth for POST model: {h_post:.4f}")
 
         # 3. Tune gamma for the Convex Combination model
+        # We do this by generating predictions from the pre- and post- models on the
+        # post-break validation set, and then finding the best gamma to mix them.
         print("\n--- (3/3) Tuning gamma for Convex Combination model ---")
-        model_full = NPRegimeModel(kernel=kernel, local_engine=engine, bandwidth=h_full)
+        model_pre = NPRegimeModel(kernel=kernel, local_engine=engine, bandwidth=h_pre)
         model_post = NPRegimeModel(kernel=kernel, local_engine=engine, bandwidth=h_post)
-        
-        # The post_start_index for the model must be relative to the start of the array it sees.
-        ComboModelPartial = partial(
-            NPConvexCombinationModel,
-            model_full=model_full,
-            model_post=model_post,
-            post_start_index=post_start_index,
-        )
-        
+
+        # Fit the models on their respective training data portions
+        model_pre.fit(X_train_pre, y_train_pre)
+        model_post.fit(X_train_post, y_train_post)
+
+        # Generate predictions on the post-break data, which is our validation set for gamma
+        pred_pre_on_post_data = model_pre.predict(X_train_post)
+        pred_post_on_post_data = model_post.predict(X_train_post)
+
         gamma_values = np.linspace(0, 1, 21)
-        gamma_grid = [{"gamma": g} for g in gamma_values]  # 21 steps for 0.05 increments
-        best_params_gamma, best_score_gamma, _ = validator.grid_search(
-            model_class=ComboModelPartial,
-            X_train=X_train_full,
-            y_train=y_train_full,
-            param_grid=gamma_grid,
-        )
-        best_gamma = best_params_gamma['gamma']
-        print(f"Best gamma: {best_gamma:.2f} (MFV MSE: {best_score_gamma:.6f}), while being close to 1 means more weight on the full model.")
+        best_gamma = 0
+        best_score_gamma = float('inf')
+
+        for gamma in gamma_values:
+            mixed_preds = NPConvexCombinationModel.predict_from_sub_models(gamma, pred_pre_on_post_data, pred_post_on_post_data)
+            # Use a simple MSE for this static evaluation, as MFV is not needed here.
+            mse = NPComboExperimentRunner._calculate_mse(y_train_post, mixed_preds)
+            if mse < best_score_gamma:
+                best_score_gamma = mse
+                best_gamma = gamma
+
+        print(f"Best gamma: {best_gamma:.2f} (MFV MSE: {best_score_gamma:.6f}). A value near 0 gives more weight to the post-break model.")
 
         self.param_grid = {
             "gamma": gamma_values.tolist(),
-            "bandwidth_full": bw_values_full,
+            "bandwidth_pre": bw_values_pre,
             "bandwidth_post": bw_values_post,
         }
 
         # --- Final Model Fitting ---
         final_model = NPConvexCombinationModel(
-            model_full=model_full,
+            model_pre=model_pre,
             model_post=model_post,
             post_start_index=post_start_index,
             gamma=best_gamma,
@@ -528,7 +569,7 @@ class NPComboExperimentRunner(ExperimentRunner):
         # The 'best_params' for the combo model is gamma, but we should also record the sub-model bandwidths
         best_params_combined = {
             "gamma": best_gamma,
-            "bandwidth_full": h_full,
+            "bandwidth_pre": h_pre,
             "bandwidth_post": h_post,
             "poly_order": self.poly_order if self.poly_order is not None else 1,
         }

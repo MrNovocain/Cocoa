@@ -13,8 +13,8 @@ dataset = CocoaDataset(
     feature_cols=DEFAULT_FEATURE_COLS,
     target_col=DEFAULT_TARGET_COL,
 )
-# sample_start_index = dataset.get_1_based_index_from_date("2019-07-15")
-sample_start_index = 5336
+sample_start_index = dataset.get_1_based_index_from_date("2019-07-15")
+# sample_start_index = 5335
 def run_np_combo_cv():
     """
     Runs the full cross-validation pipeline for the NPConvexCombinationModel
