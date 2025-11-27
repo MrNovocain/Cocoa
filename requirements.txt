@@ -2,7 +2,7 @@ numpy
 pandas
 matplotlib
 scikit-learn
-xgboost
+xgboost>=1.6.0
 statsmodels
 pmdarima
 joblib
@@ -10,4 +10,4 @@ tqdm
 python-dotenv
 jupyter
 ipykernel
-torch 
+torch

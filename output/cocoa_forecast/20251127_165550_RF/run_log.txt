@@ -1,0 +1,51 @@
+Set block size to 1334 for training length 6672 and Q=4.
+Params: {'n_estimators': 200, 'max_depth': 3, 'min_samples_leaf': 1, 'max_features': 'sqrt'} MFV MSE: 0.000817567919201976
+Params: {'n_estimators': 200, 'max_depth': 3, 'min_samples_leaf': 1, 'max_features': 'log2'} MFV MSE: 0.000817567919201976
+Params: {'n_estimators': 200, 'max_depth': 3, 'min_samples_leaf': 5, 'max_features': 'sqrt'} MFV MSE: 0.000816780245942975
+Params: {'n_estimators': 200, 'max_depth': 3, 'min_samples_leaf': 5, 'max_features': 'log2'} MFV MSE: 0.000816780245942975
+Params: {'n_estimators': 200, 'max_depth': 3, 'min_samples_leaf': 20, 'max_features': 'sqrt'} MFV MSE: 0.0008113313898667416
+Params: {'n_estimators': 200, 'max_depth': 3, 'min_samples_leaf': 20, 'max_features': 'log2'} MFV MSE: 0.0008113313898667416
+Params: {'n_estimators': 200, 'max_depth': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'} MFV MSE: 0.0008241982582414582
+Params: {'n_estimators': 200, 'max_depth': 5, 'min_samples_leaf': 1, 'max_features': 'log2'} MFV MSE: 0.0008241982582414582
+Params: {'n_estimators': 200, 'max_depth': 5, 'min_samples_leaf': 5, 'max_features': 'sqrt'} MFV MSE: 0.0008207768828471509
+Params: {'n_estimators': 200, 'max_depth': 5, 'min_samples_leaf': 5, 'max_features': 'log2'} MFV MSE: 0.0008207768828471509
+Params: {'n_estimators': 200, 'max_depth': 5, 'min_samples_leaf': 20, 'max_features': 'sqrt'} MFV MSE: 0.0008137543614871044
+Params: {'n_estimators': 200, 'max_depth': 5, 'min_samples_leaf': 20, 'max_features': 'log2'} MFV MSE: 0.0008137543614871044
+Params: {'n_estimators': 200, 'max_depth': None, 'min_samples_leaf': 1, 'max_features': 'sqrt'} MFV MSE: 0.0008861073925856414
+Params: {'n_estimators': 200, 'max_depth': None, 'min_samples_leaf': 1, 'max_features': 'log2'} MFV MSE: 0.0008861073925856414
+Params: {'n_estimators': 200, 'max_depth': None, 'min_samples_leaf': 5, 'max_features': 'sqrt'} MFV MSE: 0.000842498786998541
+Params: {'n_estimators': 200, 'max_depth': None, 'min_samples_leaf': 5, 'max_features': 'log2'} MFV MSE: 0.000842498786998541
+Params: {'n_estimators': 200, 'max_depth': None, 'min_samples_leaf': 20, 'max_features': 'sqrt'} MFV MSE: 0.000818042168114565
+Params: {'n_estimators': 200, 'max_depth': None, 'min_samples_leaf': 20, 'max_features': 'log2'} MFV MSE: 0.000818042168114565
+Params: {'n_estimators': 500, 'max_depth': 3, 'min_samples_leaf': 1, 'max_features': 'sqrt'} MFV MSE: 0.000815858008993675
+Params: {'n_estimators': 500, 'max_depth': 3, 'min_samples_leaf': 1, 'max_features': 'log2'} MFV MSE: 0.000815858008993675
+Params: {'n_estimators': 500, 'max_depth': 3, 'min_samples_leaf': 5, 'max_features': 'sqrt'} MFV MSE: 0.0008152392453856151
+Params: {'n_estimators': 500, 'max_depth': 3, 'min_samples_leaf': 5, 'max_features': 'log2'} MFV MSE: 0.0008152392453856151
+Params: {'n_estimators': 500, 'max_depth': 3, 'min_samples_leaf': 20, 'max_features': 'sqrt'} MFV MSE: 0.0008114484984085977
+Params: {'n_estimators': 500, 'max_depth': 3, 'min_samples_leaf': 20, 'max_features': 'log2'} MFV MSE: 0.0008114484984085977
+Params: {'n_estimators': 500, 'max_depth': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt'} MFV MSE: 0.0008230048984695887
+Params: {'n_estimators': 500, 'max_depth': 5, 'min_samples_leaf': 1, 'max_features': 'log2'} MFV MSE: 0.0008230048984695887
+Params: {'n_estimators': 500, 'max_depth': 5, 'min_samples_leaf': 5, 'max_features': 'sqrt'} MFV MSE: 0.000820027084983786
+Params: {'n_estimators': 500, 'max_depth': 5, 'min_samples_leaf': 5, 'max_features': 'log2'} MFV MSE: 0.000820027084983786
+Params: {'n_estimators': 500, 'max_depth': 5, 'min_samples_leaf': 20, 'max_features': 'sqrt'} MFV MSE: 0.0008137613864349875
+Params: {'n_estimators': 500, 'max_depth': 5, 'min_samples_leaf': 20, 'max_features': 'log2'} MFV MSE: 0.0008137613864349875
+Params: {'n_estimators': 500, 'max_depth': None, 'min_samples_leaf': 1, 'max_features': 'sqrt'} MFV MSE: 0.0008857864607576078
+Params: {'n_estimators': 500, 'max_depth': None, 'min_samples_leaf': 1, 'max_features': 'log2'} MFV MSE: 0.0008857864607576078
+Params: {'n_estimators': 500, 'max_depth': None, 'min_samples_leaf': 5, 'max_features': 'sqrt'} MFV MSE: 0.0008407592167093239
+Params: {'n_estimators': 500, 'max_depth': None, 'min_samples_leaf': 5, 'max_features': 'log2'} MFV MSE: 0.0008407592167093239
+Params: {'n_estimators': 500, 'max_depth': None, 'min_samples_leaf': 20, 'max_features': 'sqrt'} MFV MSE: 0.0008178608128139451
+Params: {'n_estimators': 500, 'max_depth': None, 'min_samples_leaf': 20, 'max_features': 'log2'} MFV MSE: 0.0008178608128139451
+Best params for RF: {'n_estimators': 200, 'max_depth': 3, 'min_samples_leaf': 20, 'max_features': 'sqrt'} (MFV MSE: 0.000811)
+
+--- Starting Bias-Variance Decomposition ---
+Starting bias-variance decomposition with 50 rounds...
+OOS Metrics: {'MSFE': 0.0023129194550212027, 'RMSE': np.float64(0.048092821242064834), 'MAE': 0.04069176103923526}
+
+--- Bias-Variance Decomposition Results ---
+  MSE (from BVD): 0.003617
+  Bias^2:         0.002750
+  Variance:       0.000867
+  Bias^2 + Var:   0.003617
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_165550_RF\full_forecast.png
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_165550_RF\oos_forecast.png
+Successfully completed run for RF.
