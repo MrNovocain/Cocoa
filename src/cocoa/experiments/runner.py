@@ -17,6 +17,7 @@ from ..models import (
     MFVValidator,
     evaluate_forecast,
     plot_forecast,
+    Q_VALUE,
 )
 from ..utils.bias_var_decomposition import bias_variance_decomposition
 
@@ -66,7 +67,7 @@ class ExperimentRunner:
         self.output_dir = None
         self.data_set = None
         self.split = None
-
+        self.Q = Q_VALUE
 
         
         if self.save_results:
@@ -146,7 +147,7 @@ class ExperimentRunner:
             print(f"Successfully completed run for {self.model_name} (without saving artifacts).")
 
     def _fit_model(self):
-        Q = 4
+        Q = Q_VALUE
 
         # Determine the base model class, handling functools.partial
         model_class_to_check = self.model_class
@@ -291,3 +292,4 @@ class ExperimentRunner:
         if self.split is None:
             raise ValueError("Data not split. Cannot determine training set size.")
         return self.split.T_train
+    

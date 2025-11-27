@@ -29,6 +29,11 @@ class NPRegimeModel(BaseModel):
         self.kernel = kernel
         self.local_engine = local_engine
         self.h = bandwidth  # Bandwidth
+        self.hyperparams = {
+            "kernel": self.kernel,
+            "local_engine": self.local_engine,
+            "bandwidth": self.h,
+        }
 
         # Training data for the regime will be stored here
         self._X_train: pd.DataFrame | None = None

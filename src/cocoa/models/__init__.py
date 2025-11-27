@@ -9,5 +9,6 @@ from .np_base import BaseKernel, BaseLocalEngine
 from .np_kernels import GaussianKernel, EpanechnikovKernel
 from .np_engines import LocalPolynomialEngine
 from .np_regime import NPRegimeModel
-from .np_wll import WLLModel
+from .np_combo import NPConvexCombinationModel
+# from .np_wll import WLLModel
 from . import assets

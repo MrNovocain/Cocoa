@@ -23,6 +23,10 @@ DEFAULT_FEATURE_COLS = [
 ]
 DEFAULT_TARGET_COL = "log_return"
 
+
+Q_VALUE = 4  # Number of block for MFV validation
+
+
 # ============================================================
 # Random Forest (RF) Model Configuration
 # ============================================================
