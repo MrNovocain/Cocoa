@@ -9,25 +9,7 @@ from .assets import (
     DEFAULT_TARGET_COL,
     Break_ID_ONE_BASED,
 )
-from .bandwidth import create_precentered_grid
 
-# To create the pre-centered bandwidth grid, we need the dimensions of the
-# training data (T, d). We load the dataset here to get those values before
-# the ExperimentRunner is instantiated. While this means loading data twice,
-# it's a simple approach that avoids modifying the core runner logic.
-dataset = CocoaDataset(
-    csv_path=PROCESSED_DATA_PATH,
-    feature_cols=DEFAULT_FEATURE_COLS,
-    target_col=DEFAULT_TARGET_COL,
-)
-split = dataset.split_oos_by_date(OOS_START_DATE)
-dataset.trim_data_by_start_date(Break_ID_ONE_BASED)
-T_train, d_train = split.X_train.shape
-
-# Define a parameter grid for the bandwidth 'h'.
-NP_PARAM_GRID = {
-    "bandwidth": create_precentered_grid(T=T_train, d=d_train),
-}
 
 if __name__ == "__main__":
     # The NPRegimeModel requires kernel and local_engine objects at initialization.
@@ -41,7 +23,13 @@ if __name__ == "__main__":
 
     # 2. Create a partial constructor for the ExperimentRunner to use
     NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=engine)
-
+    dataset= CocoaDataset(
+        csv_path=PROCESSED_DATA_PATH,
+        feature_cols=DEFAULT_FEATURE_COLS,
+        target_col=DEFAULT_TARGET_COL,
+    )
+    index = dataset.get_1_based_index_from_date("2019-07-15") #From grid search
+    
     # 3. Configure and run the Non-Parametric experiment
     np_experiment = ExperimentRunner(
         model_name="NP_LL_Post",
@@ -52,7 +40,8 @@ if __name__ == "__main__":
         oos_start_date=OOS_START_DATE,
         kernel_name=kernel.__class__.__name__,
         poly_order=engine.order,
-        sample_start_index=Break_ID_ONE_BASED,
+        sample_start_index=index,
+        save_results=True,
     )
     np_experiment.run()
     

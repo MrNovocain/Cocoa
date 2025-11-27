@@ -62,40 +62,6 @@ class CocoaDataset:
             self.y = self.df[self.target_col].copy()
             print(f"Data trimmed to start from {start_date.date()}. New length: {len(self.df)}")
 
-    def split_oos_by_date(self, oos_start_date: str | pd.Timestamp, df: Optional[pd.DataFrame] = None) -> TrainTestSplit:
-        """Split into (train+CV) and final OOS test window by calendar date.
-
-        oos_start_date: first date included in the OOS test region.
-        df: The dataframe to split. If None, self.df is used.
-        """
-        if df is None:
-            df = self.df
-        oos_start_date = pd.to_datetime(oos_start_date)
-        mask_test = df["date"] >= oos_start_date
-
-        if not mask_test.any():
-            raise ValueError("No observations on/after the chosen OOS start date.")
-
-        test_start_idx = df.index[mask_test][0]
-
-        X_train = df.loc[:test_start_idx-1, self.feature_cols].reset_index(drop=True)
-        y_train = df.loc[:test_start_idx-1, self.target_col].reset_index(drop=True)
-
-        X_test = df.loc[test_start_idx:, self.feature_cols].reset_index(drop=True)
-        y_test = df.loc[test_start_idx:, self.target_col].reset_index(drop=True)
-
-        T_train = len(X_train)
-        T_test = len(X_test)
-
-        return TrainTestSplit(
-            X_train=X_train,
-            y_train=y_train,
-            X_test=X_test,
-            y_test=y_test,
-            T_train=T_train,
-            T_test=T_test,
-        )
-
     def get_window(self, start_date: str | pd.Timestamp, end_date: str | pd.Timestamp) -> Tuple[pd.DataFrame, pd.Series]:
         """Return (X_window, y_window) for start_date <= date <= end_date.
         """
@@ -114,3 +80,14 @@ class CocoaDataset:
         if not (1 <= index_1_based <= len(self.dates)):
             raise ValueError(f"1-based index {index_1_based} is out of bounds for dataset of length {len(self.dates)}.")
         return self.dates.iloc[index_1_based - 1]
+
+    def get_1_based_index_from_date(self, date: str | pd.Timestamp) -> int:
+        """
+        Returns the 1-based index corresponding to a given date.
+        Finds the first occurrence if dates are not unique.
+        """
+        date = pd.to_datetime(date)
+        matches = self.dates[self.dates.dt.date == date.date()]
+        if matches.empty:
+            raise ValueError(f"Date {date.date()} not found in the dataset.")
+        return matches.index[0] + 1
