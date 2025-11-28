@@ -93,7 +93,6 @@ class ExperimentRunner:
         poly_order: int | None = None,
         n_bootstrap_rounds: int = 50,
         save_results: bool = True,
-        run_bvd: bool = True,
         output_base_dir: str = "w:/Research/NP/Cocoa/output/cocoa_forecast",
     ):
         self.model_name = model_name
@@ -110,7 +109,6 @@ class ExperimentRunner:
         self.param_grid = None
         self.gamma = None
         self.save_results = save_results
-        self.run_bvd = run_bvd
         self.output_dir = None
         self.data_set = None
         self.split = None
@@ -180,22 +178,17 @@ class ExperimentRunner:
             # For NPComboExperimentRunner, gamma is in best_params
             if 'gamma' in best_params:
                 self.gamma = best_params['gamma']
-            
-            avg_mse, avg_bias_sq, avg_variance = None, None, None
-            if self.run_bvd:
-                # 2. Perform Bias-Variance Decomposition
-                print("\n--- Starting Bias-Variance Decomposition ---")
-                avg_mse, avg_bias_sq, avg_variance = bias_variance_decomposition(
-                    model_class=self.model_class,
-                    hyperparams=best_params,
-                    X_train=self.split.X_train,
-                    y_train=self.split.y_train,
-                    X_test=self.split.X_test,
-                    y_test=self.split.y_test,
-                    n_bootstrap_rounds=self.n_bootstrap_rounds,
-                )
-            else:
-                print("\n--- Bias-Variance Decomposition skipped ---")
+            # 2. Perform Bias-Variance Decomposition
+            print("\n--- Starting Bias-Variance Decomposition ---")
+            avg_mse, avg_bias_sq, avg_variance = bias_variance_decomposition(
+                model_class=self.model_class,
+                hyperparams=best_params,
+                X_train=self.split.X_train,
+                y_train=self.split.y_train,
+                X_test=self.split.X_test,
+                y_test=self.split.y_test,
+                n_bootstrap_rounds=self.n_bootstrap_rounds,
+            )
 
             # 4. Evaluate and save all artifacts
             if self.save_results:
@@ -308,7 +301,6 @@ class ExperimentRunner:
             "optimal_hyperparameters": best_params,
             "mfv_best_score": best_mfv,
             "bias_variance_rounds": self.n_bootstrap_rounds,
-            "bias_variance_performed": self.run_bvd,
         }
         if self.kernel_name:
             run_config["kernel"] = self.kernel_name
@@ -323,27 +315,24 @@ class ExperimentRunner:
         with open(os.path.join(self.output_dir, "oos_metrics.json"), "w") as f:
             json.dump(oos_metrics, f, indent=4, cls=NpEncoder)
 
-        # Save bias-variance decomposition results if performed
-        if self.run_bvd:
-            decomposition_results = {
-                "oos_mse_from_bvd": bv_mse,
-                "bias_squared": bv_bias_sq,
-                "variance": bv_variance,
-                # The "plain bias" is the average error, sqrt(bias_squared) is its magnitude.
-                # We can't recover the sign, but we can show the non-squared bias magnitude.
-                "bias_plain": np.sqrt(bv_bias_sq),
-            }
-            with open(os.path.join(self.output_dir, "bias_variance_decomposition.json"), "w") as f:
-                json.dump(decomposition_results, f, indent=4, cls=NpEncoder)
-            
-            print("\n--- Bias-Variance Decomposition Results ---")
-            print(f"  MSE (from BVD): {bv_mse:.6f}" if bv_mse is not None else "  MSE (from BVD): N/A")
-            print(f"  Bias^2:         {bv_bias_sq:.6f}" if bv_bias_sq is not None else "  Bias^2:         N/A")
-            print(f"  Variance:       {bv_variance:.6f}" if bv_variance is not None else "  Variance:       N/A")
-            # The sum of Bias^2 and Variance should be close to the MSE.
-            print(f"  Bias^2 + Var:   {(bv_bias_sq + bv_variance):.6f}" if bv_bias_sq is not None and bv_variance is not None else "  Bias^2 + Var:   N/A")
-        else:
-            print("\n--- Bias-Variance Decomposition was NOT performed ---")
+        # Save bias-variance decomposition results
+        decomposition_results = {
+            "oos_mse_from_bvd": bv_mse,
+            "bias_squared": bv_bias_sq,
+            "variance": bv_variance,
+            # The "plain bias" is the average error, sqrt(bias_squared) is its magnitude.
+            # We can't recover the sign, but we can show the non-squared bias magnitude.
+            "bias_plain": np.sqrt(bv_bias_sq),
+        }
+        with open(os.path.join(self.output_dir, "bias_variance_decomposition.json"), "w") as f:
+            json.dump(decomposition_results, f, indent=4, cls=NpEncoder)
+        
+        print("\n--- Bias-Variance Decomposition Results ---")
+        print(f"  MSE (from BVD): {bv_mse:.6f}" if bv_mse is not None else "  MSE (from BVD): N/A")
+        print(f"  Bias^2:         {bv_bias_sq:.6f}" if bv_bias_sq is not None else "  Bias^2:         N/A")
+        print(f"  Variance:       {bv_variance:.6f}" if bv_variance is not None else "  Variance:       N/A")
+        # The sum of Bias^2 and Variance should be close to the MSE.
+        print(f"  Bias^2 + Var:   {(bv_bias_sq + bv_variance):.6f}" if bv_bias_sq is not None and bv_variance is not None else "  Bias^2 + Var:   N/A")
 
         plot_forecast(
             df=self.data_set.df, target_col=self.target_col, y_pred=y_full_pred,
@@ -523,8 +512,8 @@ class NPComboExperimentRunner(ExperimentRunner):
             break_index=0, # Crucial: set break_index to 0 for gamma tuning on X_train_post
         )
         
-        # gamma_values = np.linspace(0, 1, 20)  # 20 values from 0 to 1
-        gamma_values = np.array([0.0])
+        gamma_values = np.linspace(0, 1, 20)  # 20 values from 0 to 1
+        # gamma_values = np.array([0.0])
         gamma_grid = [{"gamma": g} for g in gamma_values]
         
         # Pass only X_train_post and y_train_post for gamma tuning, as intended

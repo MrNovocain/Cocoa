@@ -16,8 +16,8 @@ dataset = CocoaDataset(
     feature_cols=DEFAULT_FEATURE_COLS,
     target_col=DEFAULT_TARGET_COL,
 )
-sample_start_index = dataset.get_1_based_index_from_date("2019-10-01")
-# sample_start_index = 5334
+# sample_start_index = dataset.get_1_based_index_from_date("2019-10-01")
+sample_start_index = 3594
 def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
     """
     Loops over a range of sample_start_index values, runs the NPConvexCombinationModel
@@ -130,17 +130,17 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
 
 if __name__ == "__main__":
     # Define the index range you want to analyze
-    # run_np_combo_cv_for_gamma_analysis(start_index=5355, end_index=5360, jump_size=1)
-    runner = NPComboExperimentRunner(
-            model_name="NP_LL_Combo",
-            feature_cols=DEFAULT_FEATURE_COLS,
-            break_date=sample_start_index,
-            target_col=DEFAULT_TARGET_COL,
-            data_path=PROCESSED_DATA_PATH,
-            oos_start_date=OOS_START_DATE,
-            sample_start_index= sample_start_index,  # Structural break, required for Combo model
-            poly_order=1,
-            save_results=True,  # Must be True to get OOS MSE
-        )
+    run_np_combo_cv_for_gamma_analysis(start_index=200, end_index=6700, jump_size=200)
+    # runner = NPComboExperimentRunner(
+    #         model_name="NP_LL_Combo",
+    #         feature_cols=DEFAULT_FEATURE_COLS,
+    #         break_date=sample_start_index,
+    #         target_col=DEFAULT_TARGET_COL,
+    #         data_path=PROCESSED_DATA_PATH,
+    #         oos_start_date=OOS_START_DATE,
+    #         sample_start_index= sample_start_index,  # Structural break, required for Combo model
+    #         poly_order=1,
+    #         save_results=True,  # Must be True to get OOS MSE
+    #     )
 
-    run_results = runner.run()
+    # run_results = runner.run()

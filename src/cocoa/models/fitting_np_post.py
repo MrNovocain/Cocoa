@@ -40,7 +40,7 @@ if __name__ == "__main__":
         oos_start_date=OOS_START_DATE,
         kernel_name=kernel.__class__.__name__,
         poly_order=engine.order,
-        sample_start_index=index,
+        sample_start_index=3594,
         save_results=True,
     )
     np_experiment.run()
