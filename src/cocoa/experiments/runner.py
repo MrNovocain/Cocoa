@@ -518,8 +518,8 @@ class NPComboExperimentRunner(ExperimentRunner):
         gamma_grid = [{"gamma": g} for g in gamma_values]  
         best_params_gamma, best_score_gamma, _ = validator.grid_search(
             model_class=ComboModelPartial,
-            X_train=X_train_post, # The combo model is validated on the post-break data
-            y_train=y_train_post, # to find the optimal gamma
+            X_train=X_train_full, # The combo model needs the full training data to split internally
+            y_train=y_train_full, # to find the optimal gamma
             param_grid=gamma_grid,
         )
         best_gamma = best_params_gamma['gamma']

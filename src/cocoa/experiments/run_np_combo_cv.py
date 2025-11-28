@@ -35,6 +35,7 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
         runner = NPComboExperimentRunner(
             model_name="NP_LL_Combo",
             feature_cols=DEFAULT_FEATURE_COLS,
+            break_date=dataset.get_date_from_1_based_index(i),
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
             oos_start_date=OOS_START_DATE,
@@ -73,6 +74,7 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
         final_runner = NPComboExperimentRunner(
             model_name="NP_LL_Combo_Final",
             feature_cols=DEFAULT_FEATURE_COLS,
+            break_date=best_break_date,
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
             oos_start_date=OOS_START_DATE,
@@ -128,10 +130,11 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
 
 if __name__ == "__main__":
     # Define the index range you want to analyze
-    # run_np_combo_cv_for_gamma_analysis(start_index=3592, end_index=3596, jump_size=1)
+    # run_np_combo_cv_for_gamma_analysis(start_index=5355, end_index=5360, jump_size=1)
     runner = NPComboExperimentRunner(
             model_name="NP_LL_Combo",
             feature_cols=DEFAULT_FEATURE_COLS,
+            break_date=dataset.get_date_from_1_based_index(BREAK_ID_ONE_BASED),
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
             oos_start_date=OOS_START_DATE,
