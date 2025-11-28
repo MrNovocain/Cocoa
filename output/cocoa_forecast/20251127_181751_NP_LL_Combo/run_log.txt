@@ -1,0 +1,46 @@
+LocalPolynomialEngine will use device: cuda
+
+--- (1/3) Tuning bandwidth for PRE-break model ---
+Creating bandwidth grid with T=3199, d=2
+Generated bandwidth grid: [0.02605139 0.04345634 0.07248955 0.12091986 0.20170648 0.33646669
+ 0.56126026 0.93623854 1.56174001 2.60513936]
+Set block size to 639 for training length 3199 and Q=4.
+Best bandwidth for PRE-break model: 0.5613
+
+--- (2/3) Tuning bandwidth for POST-break model ---
+Creating bandwidth grid with T=3473, d=2
+Generated bandwidth grid: [0.02569701 0.04286519 0.07150345 0.11927494 0.19896259 0.3318896
+ 0.55362522 0.92350253 1.54049507 2.56970066]
+Set block size to 694 for training length 3473 and Q=4.
+Best bandwidth for POST-break model: 0.3319
+
+--- (3/3) Tuning gamma for Convex Combination model ---
+Set block size to 694 for training length 3473 and Q=4.
+Params: {'gamma': np.float64(0.0)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.05)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.1)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.15000000000000002)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.2)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.25)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.30000000000000004)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.35000000000000003)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.4)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.45)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.5)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.55)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.6000000000000001)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.65)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.7000000000000001)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.75)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.8)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.8500000000000001)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.9)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(0.9500000000000001)} MFV MSE: 0.0012584753409363948
+Params: {'gamma': np.float64(1.0)} MFV MSE: 0.0012584753409363948
+Best gamma: 0.00 (MFV MSE: 0.001258), where gamma is the weight on the pre-break model.
+
+--- Bias-Variance Decomposition is temporarily disabled ---
+OOS Metrics: {'MSFE': 0.005182275921541611, 'RMSE': np.float64(0.07198802623729596), 'MAE': 0.06521305408997721}
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_181751_NP_LL_Combo\full_forecast.png
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_181751_NP_LL_Combo\oos_forecast.png
+Successfully completed run for NP_LL_Combo.

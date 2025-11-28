@@ -1,13 +1,13 @@
-import numpy as np
+import torch
 from .np_base import BaseKernel
 
 
 class GaussianKernel(BaseKernel):
     """Gaussian kernel: K(u) = (1/sqrt(2*pi)) * exp(-u^2 / 2)."""
 
-    def weight(self, u: float | np.ndarray) -> float | np.ndarray:
+    def weight(self, u: torch.Tensor) -> torch.Tensor:
         """Computes the kernel weight for a given scaled distance u."""
-        return (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * u**2)
+        return (1 / torch.sqrt(torch.tensor(2 * torch.pi))) * torch.exp(-0.5 * u**2)
 
 
 class EpanechnikovKernel(BaseKernel):
@@ -16,8 +16,8 @@ class EpanechnikovKernel(BaseKernel):
     This kernel is optimal in a statistical sense (minimizes AMISE).
     """
 
-    def weight(self, u: float | np.ndarray) -> float | np.ndarray:
+    def weight(self, u: torch.Tensor) -> torch.Tensor:
         """Computes the kernel weight for a given scaled distance u."""
-        u_abs = np.abs(u)
-        w = np.where(u_abs <= 1, 0.75 * (1 - u_abs**2), 0)
+        u_abs = torch.abs(u)
+        w = torch.where(u_abs <= 1, 0.75 * (1 - u_abs**2), torch.tensor(0.0, device=u.device))
         return w

@@ -1,0 +1,90 @@
+LocalPolynomialEngine will use device: cuda
+
+--- (1/3) Tuning bandwidth for PRE-break model ---
+Creating bandwidth grid with T=5299, d=4
+Generated bandwidth grid: [0.03423543 0.05710814 0.09526211 0.15890678 0.26507248 0.44216755
+ 0.73757993 1.23035748 2.05235998 3.42354279]
+Set block size to 1059 for training length 5299 and Q=4.
+Best bandwidth for PRE-break model: 3.4235
+
+--- (2/3) Tuning bandwidth for POST-break model ---
+Creating bandwidth grid with T=1395, d=4
+Generated bandwidth grid: [0.0404509  0.06747617 0.11255704 0.18775646 0.31319665 0.52244351
+ 0.87148829 1.45373009 2.42496794 4.04509033]
+Set block size to 279 for training length 1395 and Q=4.
+Best bandwidth for POST-break model: 4.0451
+
+--- (3/3) Tuning gamma for Convex Combination model ---
+Set block size to 1338 for training length 6694 and Q=4.
+Params: {'gamma': np.float64(0.0)} MFV MSE: 0.0008152824568952811
+Params: {'gamma': np.float64(1.0)} MFV MSE: 0.000811725399474095
+Best gamma: 1.00 (MFV MSE: 0.000812), where gamma is the weight on the pre-break model.
+
+--- Starting Bias-Variance Decomposition ---
+Starting bias-variance decomposition with 50 rounds...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 10/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 20/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 30/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 40/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 50/50...
+Decomposition complete.
+OOS Metrics: {'MSFE': 0.0009839042507512777, 'RMSE': np.float64(0.03136724805830562), 'MAE': 0.023095947911259396}
+
+--- Bias-Variance Decomposition Results ---
+  MSE (from BVD): 0.000987
+  Bias^2:         0.000986
+  Variance:       0.000001
+  Bias^2 + Var:   0.000987
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_224022_NP_LL_Combo\full_forecast.png
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251127_224022_NP_LL_Combo\oos_forecast.png
+Successfully completed run for NP_LL_Combo.

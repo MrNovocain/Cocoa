@@ -8,18 +8,25 @@ for different models.
 # ============================================================
 # General Experiment Setup
 # ============================================================
-BREAK_DATE = "2022-07-05"
-OOS_START_DATE = "2024-11-29"
+BREAK_ID_ONE_BASED = 3594
+# BREAK_DATE = "2022-07-05"
+OOS_START_DATE = "2025-01-02"
 PROCESSED_DATA_PATH = "w:/Research/NP/Cocoa/data/processed/cocoa_ghana_full.csv"
 
 DEFAULT_FEATURE_COLS = [
     "PRCP_anom_mean",
     "TAVG_anom_mean",
     "PRCP_anom_std",
-    "N_stations",
-    "log_price_lagt",
+    "TAVG_anom_std",
+    # "log_price_lagt",
+    # "log_price_lag2",
+    # "N_stations",
 ]
 DEFAULT_TARGET_COL = "log_return"
+
+
+Q_VALUE = 4  # Number of block for MFV validation
+
 
 # ============================================================
 # Random Forest (RF) Model Configuration
@@ -53,3 +60,8 @@ XGB_PARAM_GRID = {
 }
 
 NP_BANDWIDTH_GRID = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+
+
+
+### Grid search for least bias break date is"2019-07-15"
+BREAK_DATE_LB_DATE = "2019-07-15"
