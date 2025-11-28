@@ -1,0 +1,205 @@
+LocalPolynomialEngine will use device: cuda
+
+--- (1/3) Tuning bandwidth for PRE-break model ---
+Creating bandwidth grid with T=3596, d=4
+Generated bandwidth grid: [0.0359354  0.05994387 0.0999924  0.16679737 0.27823479 0.4641236
+ 0.77420482 1.29145148 2.15427091 3.59354047]
+Set block size to 719 for training length 3596 and Q=4.
+Best bandwidth for PRE-break model: 3.5935
+
+--- (2/3) Tuning bandwidth for POST-break model ---
+Creating bandwidth grid with T=3098, d=4
+Generated bandwidth grid: [0.03661127 0.06107128 0.10187304 0.16993447 0.28346779 0.47285277
+ 0.78876595 1.31574091 2.19478812 3.66112724]
+Set block size to 619 for training length 3098 and Q=4.
+Best bandwidth for POST-break model: 3.6611
+
+--- (3/3) Tuning gamma for Convex Combination model ---
+Gamma values to test: [0.         0.01010101 0.02020202 0.03030303 0.04040404 0.05050505
+ 0.06060606 0.07070707 0.08080808 0.09090909 0.1010101  0.11111111
+ 0.12121212 0.13131313 0.14141414 0.15151515 0.16161616 0.17171717
+ 0.18181818 0.19191919 0.2020202  0.21212121 0.22222222 0.23232323
+ 0.24242424 0.25252525 0.26262626 0.27272727 0.28282828 0.29292929
+ 0.3030303  0.31313131 0.32323232 0.33333333 0.34343434 0.35353535
+ 0.36363636 0.37373737 0.38383838 0.39393939 0.4040404  0.41414141
+ 0.42424242 0.43434343 0.44444444 0.45454545 0.46464646 0.47474747
+ 0.48484848 0.49494949 0.50505051 0.51515152 0.52525253 0.53535354
+ 0.54545455 0.55555556 0.56565657 0.57575758 0.58585859 0.5959596
+ 0.60606061 0.61616162 0.62626263 0.63636364 0.64646465 0.65656566
+ 0.66666667 0.67676768 0.68686869 0.6969697  0.70707071 0.71717172
+ 0.72727273 0.73737374 0.74747475 0.75757576 0.76767677 0.77777778
+ 0.78787879 0.7979798  0.80808081 0.81818182 0.82828283 0.83838384
+ 0.84848485 0.85858586 0.86868687 0.87878788 0.88888889 0.8989899
+ 0.90909091 0.91919192 0.92929293 0.93939394 0.94949495 0.95959596
+ 0.96969697 0.97979798 0.98989899 1.        ]
+Set block size to 619 for training length 3098 and Q=4.
+Params: {'gamma': np.float64(0.0)} MFV MSE: 0.0014156969457099406
+Params: {'gamma': np.float64(0.010101010101010102)} MFV MSE: 0.0014156860043038249
+Params: {'gamma': np.float64(0.020202020202020204)} MFV MSE: 0.001415675161813639
+Params: {'gamma': np.float64(0.030303030303030304)} MFV MSE: 0.001415664418239382
+Params: {'gamma': np.float64(0.04040404040404041)} MFV MSE: 0.0014156537735810547
+Params: {'gamma': np.float64(0.05050505050505051)} MFV MSE: 0.001415643227838657
+Params: {'gamma': np.float64(0.06060606060606061)} MFV MSE: 0.0014156327810121892
+Params: {'gamma': np.float64(0.07070707070707072)} MFV MSE: 0.0014156224331016503
+Params: {'gamma': np.float64(0.08080808080808081)} MFV MSE: 0.0014156121841070414
+Params: {'gamma': np.float64(0.09090909090909091)} MFV MSE: 0.0014156020340283621
+Params: {'gamma': np.float64(0.10101010101010102)} MFV MSE: 0.0014155919828656117
+Params: {'gamma': np.float64(0.11111111111111112)} MFV MSE: 0.0014155820306187908
+Params: {'gamma': np.float64(0.12121212121212122)} MFV MSE: 0.0014155721772879006
+Params: {'gamma': np.float64(0.13131313131313133)} MFV MSE: 0.0014155624228729387
+Params: {'gamma': np.float64(0.14141414141414144)} MFV MSE: 0.0014155527673739066
+Params: {'gamma': np.float64(0.15151515151515152)} MFV MSE: 0.001415543210790804
+Params: {'gamma': np.float64(0.16161616161616163)} MFV MSE: 0.0014155337531236315
+Params: {'gamma': np.float64(0.17171717171717174)} MFV MSE: 0.0014155243943723879
+Params: {'gamma': np.float64(0.18181818181818182)} MFV MSE: 0.0014155151345370742
+Params: {'gamma': np.float64(0.19191919191919193)} MFV MSE: 0.0014155059736176896
+Params: {'gamma': np.float64(0.20202020202020204)} MFV MSE: 0.0014154969116142346
+Params: {'gamma': np.float64(0.21212121212121213)} MFV MSE: 0.0014154879485267092
+Params: {'gamma': np.float64(0.22222222222222224)} MFV MSE: 0.0014154790843551135
+Params: {'gamma': np.float64(0.23232323232323235)} MFV MSE: 0.0014154703190994474
+Params: {'gamma': np.float64(0.24242424242424243)} MFV MSE: 0.0014154616527597105
+Params: {'gamma': np.float64(0.25252525252525254)} MFV MSE: 0.001415453085335903
+Params: {'gamma': np.float64(0.26262626262626265)} MFV MSE: 0.0014154446168280254
+Params: {'gamma': np.float64(0.27272727272727276)} MFV MSE: 0.001415436247236077
+Params: {'gamma': np.float64(0.2828282828282829)} MFV MSE: 0.0014154279765600584
+Params: {'gamma': np.float64(0.29292929292929293)} MFV MSE: 0.0014154198047999693
+Params: {'gamma': np.float64(0.30303030303030304)} MFV MSE: 0.0014154117319558094
+Params: {'gamma': np.float64(0.31313131313131315)} MFV MSE: 0.0014154037580275797
+Params: {'gamma': np.float64(0.32323232323232326)} MFV MSE: 0.0014153958830152788
+Params: {'gamma': np.float64(0.33333333333333337)} MFV MSE: 0.0014153881069189076
+Params: {'gamma': np.float64(0.3434343434343435)} MFV MSE: 0.0014153804297384659
+Params: {'gamma': np.float64(0.3535353535353536)} MFV MSE: 0.0014153728514739539
+Params: {'gamma': np.float64(0.36363636363636365)} MFV MSE: 0.0014153653721253713
+Params: {'gamma': np.float64(0.37373737373737376)} MFV MSE: 0.001415357991692718
+Params: {'gamma': np.float64(0.38383838383838387)} MFV MSE: 0.0014153507101759945
+Params: {'gamma': np.float64(0.393939393939394)} MFV MSE: 0.0014153435275752007
+Params: {'gamma': np.float64(0.4040404040404041)} MFV MSE: 0.0014153364438903358
+Params: {'gamma': np.float64(0.4141414141414142)} MFV MSE: 0.001415329459121401
+Params: {'gamma': np.float64(0.42424242424242425)} MFV MSE: 0.0014153225732683955
+Params: {'gamma': np.float64(0.43434343434343436)} MFV MSE: 0.0014153157863313194
+Params: {'gamma': np.float64(0.4444444444444445)} MFV MSE: 0.0014153090983101732
+Params: {'gamma': np.float64(0.4545454545454546)} MFV MSE: 0.0014153025092049564
+Params: {'gamma': np.float64(0.4646464646464647)} MFV MSE: 0.001415296019015669
+Params: {'gamma': np.float64(0.4747474747474748)} MFV MSE: 0.001415289627742311
+Params: {'gamma': np.float64(0.48484848484848486)} MFV MSE: 0.0014152833353848827
+Params: {'gamma': np.float64(0.494949494949495)} MFV MSE: 0.0014152771419433836
+Params: {'gamma': np.float64(0.5050505050505051)} MFV MSE: 0.001415271047417814
+Params: {'gamma': np.float64(0.5151515151515152)} MFV MSE: 0.0014152650518081747
+Params: {'gamma': np.float64(0.5252525252525253)} MFV MSE: 0.0014152591551144643
+Params: {'gamma': np.float64(0.5353535353535354)} MFV MSE: 0.0014152533573366835
+Params: {'gamma': np.float64(0.5454545454545455)} MFV MSE: 0.0014152476584748323
+Params: {'gamma': np.float64(0.5555555555555556)} MFV MSE: 0.001415242058528911
+Params: {'gamma': np.float64(0.5656565656565657)} MFV MSE: 0.0014152365574989182
+Params: {'gamma': np.float64(0.5757575757575758)} MFV MSE: 0.0014152311553848557
+Params: {'gamma': np.float64(0.5858585858585859)} MFV MSE: 0.0014152258521867222
+Params: {'gamma': np.float64(0.595959595959596)} MFV MSE: 0.0014152206479045187
+Params: {'gamma': np.float64(0.6060606060606061)} MFV MSE: 0.0014152155425382446
+Params: {'gamma': np.float64(0.6161616161616162)} MFV MSE: 0.0014152105360878998
+Params: {'gamma': np.float64(0.6262626262626263)} MFV MSE: 0.001415205628553485
+Params: {'gamma': np.float64(0.6363636363636365)} MFV MSE: 0.0014152008199349994
+Params: {'gamma': np.float64(0.6464646464646465)} MFV MSE: 0.0014151961102324428
+Params: {'gamma': np.float64(0.6565656565656566)} MFV MSE: 0.0014151914994458164
+Params: {'gamma': np.float64(0.6666666666666667)} MFV MSE: 0.0014151869875751197
+Params: {'gamma': np.float64(0.6767676767676768)} MFV MSE: 0.001415182574620352
+Params: {'gamma': np.float64(0.686868686868687)} MFV MSE: 0.001415178260581514
+Params: {'gamma': np.float64(0.696969696969697)} MFV MSE: 0.0014151740454586058
+Params: {'gamma': np.float64(0.7070707070707072)} MFV MSE: 0.0014151699292516268
+Params: {'gamma': np.float64(0.7171717171717172)} MFV MSE: 0.0014151659119605768
+Params: {'gamma': np.float64(0.7272727272727273)} MFV MSE: 0.001415161993585457
+Params: {'gamma': np.float64(0.7373737373737375)} MFV MSE: 0.001415158174126267
+Params: {'gamma': np.float64(0.7474747474747475)} MFV MSE: 0.0014151544535830059
+Params: {'gamma': np.float64(0.7575757575757577)} MFV MSE: 0.0014151508319556745
+Params: {'gamma': np.float64(0.7676767676767677)} MFV MSE: 0.0014151473092442726
+Params: {'gamma': np.float64(0.7777777777777778)} MFV MSE: 0.0014151438854488002
+Params: {'gamma': np.float64(0.787878787878788)} MFV MSE: 0.0014151405605692573
+Params: {'gamma': np.float64(0.797979797979798)} MFV MSE: 0.0014151373346056439
+Params: {'gamma': np.float64(0.8080808080808082)} MFV MSE: 0.0014151342075579604
+Params: {'gamma': np.float64(0.8181818181818182)} MFV MSE: 0.0014151311794262057
+Params: {'gamma': np.float64(0.8282828282828284)} MFV MSE: 0.0014151282502103816
+Params: {'gamma': np.float64(0.8383838383838385)} MFV MSE: 0.001415125419910486
+Params: {'gamma': np.float64(0.8484848484848485)} MFV MSE: 0.00141512268852652
+Params: {'gamma': np.float64(0.8585858585858587)} MFV MSE: 0.0014151200560584842
+Params: {'gamma': np.float64(0.8686868686868687)} MFV MSE: 0.0014151175225063774
+Params: {'gamma': np.float64(0.8787878787878789)} MFV MSE: 0.0014151150878702003
+Params: {'gamma': np.float64(0.888888888888889)} MFV MSE: 0.0014151127521499526
+Params: {'gamma': np.float64(0.8989898989898991)} MFV MSE: 0.0014151105153456347
+Params: {'gamma': np.float64(0.9090909090909092)} MFV MSE: 0.001415108377457246
+Params: {'gamma': np.float64(0.9191919191919192)} MFV MSE: 0.0014151063384847868
+Params: {'gamma': np.float64(0.9292929292929294)} MFV MSE: 0.0014151043984282573
+Params: {'gamma': np.float64(0.9393939393939394)} MFV MSE: 0.001415102557287657
+Params: {'gamma': np.float64(0.9494949494949496)} MFV MSE: 0.0014151008150629866
+Params: {'gamma': np.float64(0.9595959595959597)} MFV MSE: 0.0014150991717542455
+Params: {'gamma': np.float64(0.9696969696969697)} MFV MSE: 0.0014150976273614336
+Params: {'gamma': np.float64(0.9797979797979799)} MFV MSE: 0.001415096181884552
+Params: {'gamma': np.float64(0.98989898989899)} MFV MSE: 0.0014150948353235996
+Params: {'gamma': np.float64(1.0)} MFV MSE: 0.0014150935876785767
+Best gamma: 1.00 (MFV MSE: 0.001415), where gamma is the weight on the pre-break model.
+
+--- Starting Bias-Variance Decomposition ---
+Starting bias-variance decomposition with 50 rounds...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 10/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 20/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 30/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 40/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 50/50...
+Decomposition complete.
+OOS Metrics: {'MSFE': 0.0009823339621329221, 'RMSE': np.float64(0.03134220735897397), 'MAE': 0.023097236631418605}
+
+--- Bias-Variance Decomposition Results ---
+  MSE (from BVD): 0.000988
+  Bias^2:         0.000986
+  Variance:       0.000001
+  Bias^2 + Var:   0.000988
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251128_125425_NP_LL_Combo\full_forecast.png
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251128_125425_NP_LL_Combo\oos_forecast.png
+Successfully completed run for NP_LL_Combo.

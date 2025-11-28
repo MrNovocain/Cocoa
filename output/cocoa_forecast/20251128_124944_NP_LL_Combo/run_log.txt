@@ -1,0 +1,108 @@
+LocalPolynomialEngine will use device: cuda
+
+--- (1/3) Tuning bandwidth for PRE-break model ---
+Creating bandwidth grid with T=3598, d=4
+Generated bandwidth grid: [0.03593291 0.0599397  0.09998545 0.16678578 0.27821545 0.46409134
+ 0.77415102 1.29136173 2.15412119 3.59329071]
+Set block size to 719 for training length 3598 and Q=4.
+Best bandwidth for PRE-break model: 3.5933
+
+--- (2/3) Tuning bandwidth for POST-break model ---
+Creating bandwidth grid with T=3096, d=4
+Generated bandwidth grid: [0.03661423 0.06107621 0.10188126 0.16994819 0.28349067 0.47289094
+ 0.78882963 1.31584713 2.1949653  3.66142279]
+Set block size to 619 for training length 3096 and Q=4.
+Best bandwidth for POST-break model: 3.6614
+
+--- (3/3) Tuning gamma for Convex Combination model ---
+Set block size to 619 for training length 3096 and Q=4.
+Params: {'gamma': np.float64(0.0)} MFV MSE: 0.001415694694578151
+Params: {'gamma': np.float64(0.05263157894736842)} MFV MSE: 0.001415639104048667
+Params: {'gamma': np.float64(0.10526315789473684)} MFV MSE: 0.0014155861749996545
+Params: {'gamma': np.float64(0.15789473684210525)} MFV MSE: 0.0014155359074311136
+Params: {'gamma': np.float64(0.21052631578947367)} MFV MSE: 0.001415488301343044
+Params: {'gamma': np.float64(0.2631578947368421)} MFV MSE: 0.0014154433567354456
+Params: {'gamma': np.float64(0.3157894736842105)} MFV MSE: 0.0014154010736083193
+Params: {'gamma': np.float64(0.3684210526315789)} MFV MSE: 0.001415361451961664
+Params: {'gamma': np.float64(0.42105263157894735)} MFV MSE: 0.0014153244917954803
+Params: {'gamma': np.float64(0.47368421052631576)} MFV MSE: 0.001415290193109768
+Params: {'gamma': np.float64(0.5263157894736842)} MFV MSE: 0.0014152585559045277
+Params: {'gamma': np.float64(0.5789473684210527)} MFV MSE: 0.0014152295801797576
+Params: {'gamma': np.float64(0.631578947368421)} MFV MSE: 0.00141520326593546
+Params: {'gamma': np.float64(0.6842105263157894)} MFV MSE: 0.001415179613171634
+Params: {'gamma': np.float64(0.7368421052631579)} MFV MSE: 0.0014151586218882788
+Params: {'gamma': np.float64(0.7894736842105263)} MFV MSE: 0.0014151402920853956
+Params: {'gamma': np.float64(0.8421052631578947)} MFV MSE: 0.0014151246237629836
+Params: {'gamma': np.float64(0.894736842105263)} MFV MSE: 0.001415111616921043
+Params: {'gamma': np.float64(0.9473684210526315)} MFV MSE: 0.001415101271559574
+Params: {'gamma': np.float64(1.0)} MFV MSE: 0.0014150935876785767
+Best gamma: 1.00 (MFV MSE: 0.001415), where gamma is the weight on the pre-break model.
+
+--- Starting Bias-Variance Decomposition ---
+Starting bias-variance decomposition with 50 rounds...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 10/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 20/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 30/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 40/50...
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+LocalPolynomialEngine will use device: cuda
+  Completed round 50/50...
+Decomposition complete.
+OOS Metrics: {'MSFE': 0.0009823242596051526, 'RMSE': np.float64(0.03134205257485784), 'MAE': 0.02309792541740401}
+
+--- Bias-Variance Decomposition Results ---
+  MSE (from BVD): 0.000988
+  Bias^2:         0.000986
+  Variance:       0.000001
+  Bias^2 + Var:   0.000988
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251128_124944_NP_LL_Combo\full_forecast.png
+Plot saved to w:/Research/NP/Cocoa/output/cocoa_forecast\20251128_124944_NP_LL_Combo\oos_forecast.png
+Successfully completed run for NP_LL_Combo.
