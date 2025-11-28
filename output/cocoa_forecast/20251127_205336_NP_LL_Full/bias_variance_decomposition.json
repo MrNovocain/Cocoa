@@ -1,7 +1,0 @@
-{
-    "message": "BVD was disabled for this run.",
-    "oos_mse_from_bvd": "N/A",
-    "bias_squared": "N/A",
-    "variance": "N/A",
-    "bias_plain": "N/A"
-}

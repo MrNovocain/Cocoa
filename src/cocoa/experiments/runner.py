@@ -469,6 +469,7 @@ class NPComboExperimentRunner(ExperimentRunner):
         T_pre, d_pre = X_train_pre.shape
         bw_values_pre = create_precentered_grid(T=T_pre, d=d_pre)
         bw_grid_pre = [{"bandwidth": h} for h in bw_values_pre]
+        # bw_grid_pre = [{"bandwidth": 1.0}] # Manually set pre-break bandwidth to 1.0 for now
         best_params_pre, _, _ = validator.grid_search(
             model_class=NPModelPartial,
             X_train=X_train_pre,
@@ -490,6 +491,7 @@ class NPComboExperimentRunner(ExperimentRunner):
 
         bw_values_post = create_precentered_grid(T=T_post, d=d_post)
         bw_grid_post = [{"bandwidth": h} for h in bw_values_post]
+        # bw_grid_post = [{"bandwidth": 1.0}] # Manually set post-break bandwidth to 1.0 for now
         best_params_post, _, _ = validator.grid_search(
             model_class=NPModelPartial,
             X_train=X_train_post,
@@ -512,7 +514,7 @@ class NPComboExperimentRunner(ExperimentRunner):
             break_index=0, # Crucial: set break_index to 0 for gamma tuning on X_train_post
         )
         
-        gamma_values = np.linspace(0, 1, 20)  # 20 values from 0 to 1
+        gamma_values = np.linspace(0, 1, 21)  # 20 values from 0 to 1
         # gamma_values = np.array([0.0])
         gamma_grid = [{"gamma": g} for g in gamma_values]
         

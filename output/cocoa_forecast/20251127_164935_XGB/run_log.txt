@@ -1,1 +1,0 @@
-Set block size to 1334 for training length 6672 and Q=4.
