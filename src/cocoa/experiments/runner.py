@@ -505,29 +505,79 @@ class NPComboExperimentRunner(ExperimentRunner):
         # 3. Tune gamma for the Convex Combination model
         print("\n--- (3/3) Tuning gamma for Convex Combination model ---")
         
-        ComboModelPartial = partial(
-            NPConvexCombinationModel,
-            kernel=kernel,
-            local_engine=engine,
-            pre_bandwidth=h_pre,
-            post_bandwidth=h_post,
-            break_index=0, # Crucial: set break_index to 0 for gamma tuning on X_train_post
-        )
+        # 4. Manully perform MFV to find best gamma
         
-        gamma_values = np.linspace(0, 1, 21)  # 20 values from 0 to 1
-        # gamma_values = np.array([0.0])
-        gamma_grid = [{"gamma": g} for g in gamma_values]
+        post_train_dates = train_dates[train_dates >= pd.to_datetime(self.start_date)].reset_index(drop=True)
         
-        # Pass only X_train_post and y_train_post for gamma tuning, as intended
-        best_params_gamma, best_score_gamma, _ = validator.grid_search(
-            model_class=ComboModelPartial,
-            X_train=X_train_post, # Correctly using only post-break data for gamma tuning MFV
-            y_train=y_train_post, # Correctly using only post-break data for gamma tuning MFV
-            param_grid=gamma_grid,
-        )
-        best_gamma = best_params_gamma['gamma']
-        self.gamma = best_gamma  # Store the best gamma
-        print(f"Best gamma: {best_gamma:.2f} (MFV MSE: {best_score_gamma:.6f}), where gamma is the weight on the pre-break model.")
+        block_size = T_post // (self.Q + 1)
+        if block_size == 0:
+            raise ValueError("Post-break training data is too short for the number of MFV folds.")
+        cv_start_post = T_post - block_size * self.Q
+
+        y_val_all, y_pre_all, y_post_all = [], [], []
+
+        for q in range(self.Q):
+            # --- Validation set is a slice of the POST-BREAK data ---
+            val_start_idx_post = cv_start_post + q * block_size
+            val_end_idx_post = val_start_idx_post + block_size
+
+            X_val = X_train_post.iloc[val_start_idx_post:val_end_idx_post]
+            y_val = y_train_post.iloc[val_start_idx_post:val_end_idx_post]
+
+            # --- Training set is ALL data prior to the validation fold start ---
+            val_start_date = post_train_dates.iloc[val_start_idx_post]
+            train_fold_mask = train_dates < val_start_date
+            
+            X_train_fold = X_train_full[train_fold_mask]
+            y_train_fold = y_train_full[train_fold_mask]
+            fold_dates = train_dates[train_fold_mask]
+
+            # Fit pre-model on its portion of the fold's training data
+            pre_model = NPRegimeModel(kernel=kernel, local_engine=engine, bandwidth=h_pre)
+            pre_model.fit(X_train_fold[fold_dates <= pd.to_datetime(self.start_date)], 
+                          y_train_fold[fold_dates <= pd.to_datetime(self.start_date)])
+            y_pre_pred = pre_model.predict(X_val)
+
+            # Fit post-model on its portion, if available
+            post_model = NPRegimeModel(kernel=kernel, local_engine=engine, bandwidth=h_post)
+            if (fold_dates > pd.to_datetime(self.start_date)).any():
+                post_model.fit(X_train_fold[fold_dates > pd.to_datetime(self.start_date)], 
+                               y_train_fold[fold_dates > pd.to_datetime(self.start_date)])
+                y_post_pred = post_model.predict(X_val)
+            else:
+                y_post_pred = np.full(len(X_val), np.nan)
+
+            y_val_all.extend(y_val.to_list())
+            y_pre_all.extend(y_pre_pred.tolist())
+            y_post_all.extend(y_post_pred.tolist())
+        
+        # Now find the best gamma by combining the accumulated predictions
+        y_val_arr = np.array(y_val_all)
+        y_pre_arr = np.array(y_pre_all)
+        y_post_arr = np.array(y_post_all)
+        
+        valid_mask = ~np.isnan(y_post_arr)
+        if not np.any(valid_mask):
+            raise ValueError("Could not make any valid post-break predictions during MFV.")
+
+        y_val_filt = y_val_arr[valid_mask]
+        y_pre_filt = y_pre_arr[valid_mask]
+        y_post_filt = y_post_arr[valid_mask]
+        
+        gamma_values = np.linspace(0, 1, 21)
+        gamma_losses = []
+        for gamma in gamma_values:
+            y_hat = gamma * y_pre_filt + (1.0 - gamma) * y_post_filt
+            loss = np.mean((y_val_filt - y_hat)**2)
+            gamma_losses.append(loss)
+            print(f"  Gamma: {gamma:.2f}, MFV MSE: {loss:.6f}")
+
+        best_idx = np.argmin(gamma_losses)
+        best_gamma = gamma_values[best_idx]
+        best_score_gamma = gamma_losses[best_idx]
+        self.gamma = best_gamma
+        
+        print(f"Best gamma: {best_gamma:.2f} (MFV MSE: {best_score_gamma:.6f}), gamma = 1 means only pre-break model.")
 
         self.param_grid = {
             "gamma": gamma_values.tolist(),
