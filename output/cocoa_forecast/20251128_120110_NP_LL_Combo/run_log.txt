@@ -1,0 +1,18 @@
+LocalPolynomialEngine will use device: cuda
+
+--- (1/3) Tuning bandwidth for PRE-break model ---
+Creating bandwidth grid with T=5356, d=4
+Generated bandwidth grid: [0.03418967 0.05703181 0.09513479 0.1586944  0.26471821 0.44157659
+ 0.73659414 1.22871309 2.04961696 3.41896716]
+Set block size to 1071 for training length 5356 and Q=4.
+Best bandwidth for PRE-break model: 3.4190
+
+--- (2/3) Tuning bandwidth for POST-break model ---
+Creating bandwidth grid with T=1338, d=4
+Generated bandwidth grid: [0.0406624  0.06782897 0.11314554 0.18873813 0.31483418 0.52517506
+ 0.87604481 1.46133081 2.43764671 4.06623979]
+Set block size to 267 for training length 1338 and Q=4.
+Best bandwidth for POST-break model: 4.0662
+
+--- (3/3) Tuning gamma for Convex Combination model ---
+Set block size to 267 for training length 1338 and Q=4.

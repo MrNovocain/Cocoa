@@ -126,6 +126,8 @@ def build_features(raw_data_dir: Path, processed_data_dir: Path,reading_path: st
     # If we are at time T, we know Price(T-1).
     prices["log_price_lagt"] = prices["log_price"].shift(1)
 
+    prices["log_price_lag2"] = prices["log_price"].shift(2)
+
     # 4. Merge
     ghana = agg_weather.rename(columns={"DATE": "date"})
     
@@ -139,10 +141,19 @@ def build_features(raw_data_dir: Path, processed_data_dir: Path,reading_path: st
     cocoa_ghana = cocoa_ghana.sort_values("date").reset_index(drop=True)
     cocoa_ghana = cocoa_ghana.dropna(subset=["log_price_lagt"])
 
-    # Calculate Return
+    # Calculate Contemporaneous Return
     cocoa_ghana["log_return"] = cocoa_ghana["log_price"] - cocoa_ghana["log_price_lagt"]
 
-    # Save
+    # --- FORECASTING TARGET ---
+    # To forecast, we need to predict the NEXT day's return.
+    # We shift the log_return column up by one to create the target y.
+    # y(t) = log_return(t+1)
+    cocoa_ghana["log_return_forecast_target"] = cocoa_ghana["log_return"].shift(-1)
+
+    # Drop the last row where the forecast target is NaN
+    cocoa_ghana = cocoa_ghana.dropna(subset=["log_return_forecast_target"])
+
+    # Save 
     processed_data_dir.mkdir(parents=True, exist_ok=True)
     cocoa_ghana.to_csv(processed_data_dir / file_name, index=False)
 

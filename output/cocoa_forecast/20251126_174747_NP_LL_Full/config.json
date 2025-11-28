@@ -1,0 +1,17 @@
+{
+    "model_name": "NP_LL_Full",
+    "run_timestamp": "20251126",
+    "test_set_start_date": "2024-11-29",
+    "structural_break_time": "not applied",
+    "regressors": [
+        "PRCP_anom_std",
+        "log_price_lagt"
+    ],
+    "target": "log_return",
+    "best_hyperparameters": {
+        "bandwidth": 0.49654352964361315
+    },
+    "mfv_best_score": 0.0008079442389999779,
+    "kernel": "GaussianKernel",
+    "polynomial_order": 1
+}

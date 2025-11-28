@@ -68,8 +68,8 @@ class MFVValidator:
 
         for q in range(self.Q):
             # q-th validation block within CV region
-            val_start = cv_start + q * block_size
-            val_end = val_start + block_size  # exclusive
+            val_start = cv_start + q * self.block_size
+            val_end = val_start + self.block_size  # exclusive
 
             # Training block: all observations strictly before validation block
             train_end = val_start  # exclusive

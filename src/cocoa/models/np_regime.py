@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 from .base_model import BaseModel
-from .np_base import BaseKernel, BaseBandwidthSelector, BaseLocalEngine
+from .np_base import BaseKernel, BaseLocalEngine
 
 
 class NPRegimeModel(BaseModel):
@@ -20,17 +20,20 @@ class NPRegimeModel(BaseModel):
         self,
         kernel: BaseKernel,
         local_engine: BaseLocalEngine,
-        bandwidth_selector: BaseBandwidthSelector | None = None,
         bandwidth: float | None = None,
     ):
         super().__init__()
-        if bandwidth is None and bandwidth_selector is None:
-            raise ValueError("Must provide either a fixed 'bandwidth' or a 'bandwidth_selector'.")
+        if bandwidth is None:
+            raise ValueError("Must provide a fixed 'bandwidth'.")
 
         self.kernel = kernel
         self.local_engine = local_engine
-        self.bandwidth_selector = bandwidth_selector
         self.h = bandwidth  # Bandwidth
+        self.hyperparams = {
+            "kernel": self.kernel,
+            "local_engine": self.local_engine,
+            "bandwidth": self.h,
+        }
 
         # Training data for the regime will be stored here
         self._X_train: pd.DataFrame | None = None
@@ -42,10 +45,6 @@ class NPRegimeModel(BaseModel):
         """
         self._X_train = X.copy()
         self._y_train = y.copy()
-
-        if self.bandwidth_selector:
-            self.h = self.bandwidth_selector.select_bandwidth(self._X_train, self._y_train)
-
         self._is_fitted = True
         return self
 
@@ -53,9 +52,14 @@ class NPRegimeModel(BaseModel):
         if not self.is_fitted or self._X_train is None or self._y_train is None or self.h is None:
             raise RuntimeError("NPRegimeModel must be fitted before calling predict().")
 
+        # Handle case where the model was fitted on an empty dataset
+        if self._X_train.empty:
+            # Return an array of zeros, as it indicates no data for this regime
+            return np.zeros(len(X))
+
         # Use the local engine to compute predictions for the new data points X
         predictions = self.local_engine.fit(self._X_train, self._y_train, X, self.h, self.kernel)
         return predictions
 
-        super().__init__()
+
         

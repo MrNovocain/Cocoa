@@ -1,0 +1,54 @@
+{
+    "model_name": "NP_LL_Combo",
+    "run_timestamp": "20251127",
+    "test_set_start_date": "2025-01-02",
+    "structural_break_index": 6600,
+    "structural_break_date": "2024-08-14",
+    "regressors": [
+        "PRCP_anom_mean",
+        "TAVG_anom_mean",
+        "PRCP_anom_std",
+        "TAVG_anom_std"
+    ],
+    "target": "log_return",
+    "hyperparameter_grid": {
+        "gamma": [
+            0.0,
+            1.0
+        ],
+        "bandwidth_pre": [
+            0.03330927913308527,
+            0.05556322641564624,
+            0.09268504783250799,
+            0.1546079780798197,
+            0.2579016512903622,
+            0.43020588306223545,
+            0.7176266646427404,
+            1.1970734247996413,
+            1.9968388229761962,
+            3.3309279133085266
+        ],
+        "bandwidth_post": [
+            0.05659584510852353,
+            0.0944075596288194,
+            0.15748130093258023,
+            0.2626946426846012,
+            0.4382010745817607,
+            0.7309634479114783,
+            1.2193205201347437,
+            2.0339492146558205,
+            3.392831777605012,
+            5.659584510852352
+        ]
+    },
+    "optimal_hyperparameters": {
+        "gamma": 0.0,
+        "bandwidth_pre": 3.3309279133085266,
+        "bandwidth_post": 5.659584510852352,
+        "break_index": 6599,
+        "poly_order": 1
+    },
+    "mfv_best_score": 0.00081172178134691,
+    "bias_variance_rounds": 50,
+    "polynomial_order": 1
+}

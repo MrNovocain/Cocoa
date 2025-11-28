@@ -1,0 +1,19 @@
+{
+    "model_name": "NP_LL_Combo_12_d4",
+    "run_timestamp": "20251126",
+    "test_set_start_date": "2024-11-29",
+    "structural_break_time": "not applied",
+    "regressors": [
+        "log_price_lagt",
+        "PRCP_anom_mean",
+        "TAVG_anom_mean",
+        "PRCP_anom_std"
+    ],
+    "target": "log_return",
+    "best_hyperparameters": {
+        "bandwidth": 33.26350393326319
+    },
+    "mfv_best_score": 0.0008091549529579173,
+    "kernel": "GaussianKernel",
+    "polynomial_order": 1
+}
