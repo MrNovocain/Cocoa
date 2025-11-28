@@ -52,6 +52,11 @@ class NPRegimeModel(BaseModel):
         if not self.is_fitted or self._X_train is None or self._y_train is None or self.h is None:
             raise RuntimeError("NPRegimeModel must be fitted before calling predict().")
 
+        # Handle case where the model was fitted on an empty dataset
+        if self._X_train.empty:
+            # Return an array of zeros, as it indicates no data for this regime
+            return np.zeros(len(X))
+
         # Use the local engine to compute predictions for the new data points X
         predictions = self.local_engine.fit(self._X_train, self._y_train, X, self.h, self.kernel)
         return predictions

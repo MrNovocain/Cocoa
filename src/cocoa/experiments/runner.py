@@ -502,24 +502,24 @@ class NPComboExperimentRunner(ExperimentRunner):
 
         # 3. Tune gamma for the Convex Combination model
         print("\n--- (3/3) Tuning gamma for Convex Combination model ---")
-        model_pre = NPRegimeModel(kernel=kernel, local_engine=engine, bandwidth=h_pre)
-        model_post = NPRegimeModel(kernel=kernel, local_engine=engine, bandwidth=h_post)
         
         ComboModelPartial = partial(
             NPConvexCombinationModel,
-            model_pre=model_pre,
-            model_post=model_post,
-            break_index=post_start_index,
+            kernel=kernel,
+            local_engine=engine,
+            pre_bandwidth=h_pre,
+            post_bandwidth=h_post,
+            break_index=0, # Crucial: set break_index to 0 for gamma tuning on X_train_post
         )
         
-        # gamma_values = np.linspace(0, 0, 1) # Changed to only test gamma=0
-        # gamma_grid = [{"gamma": g} for g in gamma_values]  
-        gamma_values = np.array([0.0, 1.0]) # Changed to only test gamma=0 and gamma=1
-        gamma_grid = [{"gamma": g} for g in gamma_values]  
+        gamma_values = np.linspace(0, 1, 20)  # 20 values from 0 to 1
+        gamma_grid = [{"gamma": g} for g in gamma_values]
+        
+        # Pass only X_train_post and y_train_post for gamma tuning, as intended
         best_params_gamma, best_score_gamma, _ = validator.grid_search(
             model_class=ComboModelPartial,
-            X_train=X_train_full, # The combo model needs the full training data to split internally
-            y_train=y_train_full, # to find the optimal gamma
+            X_train=X_train_post, # Correctly using only post-break data for gamma tuning MFV
+            y_train=y_train_post, # Correctly using only post-break data for gamma tuning MFV
             param_grid=gamma_grid,
         )
         best_gamma = best_params_gamma['gamma']
@@ -534,9 +534,11 @@ class NPComboExperimentRunner(ExperimentRunner):
 
         # --- Final Model Fitting ---
         final_model = NPConvexCombinationModel(
-            model_pre=model_pre,
-            model_post=model_post,
-            break_index=post_start_index,
+            kernel=kernel,
+            local_engine=engine,
+            pre_bandwidth=h_pre,
+            post_bandwidth=h_post,
+            break_index=post_start_index, # Use original post_start_index for final model
             gamma=best_gamma,
         )
         final_model.fit(X_train_full, y_train_full)
@@ -559,5 +561,4 @@ class NPComboExperimentRunner(ExperimentRunner):
             "poly_order": self.poly_order if self.poly_order is not None else 1,
         }
 
-        return best_params_combined, best_score_gamma, final_model, y_full_pred
-    
+        return best_params_combined, best_score_gamma, final_model, y_full_pred    

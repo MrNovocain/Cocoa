@@ -91,8 +91,10 @@ def bias_variance_decomposition(
             )
 
             model = model_class(
-                model_pre=model_pre,
-                model_post=model_post,
+                kernel=kernel,
+                local_engine=engine,
+                pre_bandwidth=hyperparams['bandwidth_pre'],
+                post_bandwidth=hyperparams['bandwidth_post'],
                 break_index=hyperparams['break_index'],
                 gamma=hyperparams['gamma']
             )

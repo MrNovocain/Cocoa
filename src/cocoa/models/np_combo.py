@@ -6,6 +6,8 @@ from .base_model import BaseModel
 from .np_regime import NPRegimeModel
 
 
+from .np_base import BaseKernel, BaseLocalEngine
+
 class NPConvexCombinationModel(BaseModel):
     """
     A convex combination of two non-parametric models.
@@ -21,8 +23,10 @@ class NPConvexCombinationModel(BaseModel):
 
     def __init__(
         self,
-        model_pre: NPRegimeModel,
-        model_post: NPRegimeModel,
+        kernel: BaseKernel,
+        local_engine: BaseLocalEngine,
+        pre_bandwidth: float,
+        post_bandwidth: float,
         break_index: int,
         gamma: float,
     ):
@@ -30,15 +34,22 @@ class NPConvexCombinationModel(BaseModel):
         if not (0 <= gamma <= 1):
             raise ValueError("gamma must be between 0 and 1.")
 
-        self.model_pre = model_pre.clone()
-        self.model_post = model_post.clone()
+        self.kernel = kernel
+        self.local_engine = local_engine
+        self.pre_bandwidth = pre_bandwidth
+        self.post_bandwidth = post_bandwidth
+
+        self.model_pre = NPRegimeModel(kernel=self.kernel, local_engine=self.local_engine, bandwidth=self.pre_bandwidth)
+        self.model_post = NPRegimeModel(kernel=self.kernel, local_engine=self.local_engine, bandwidth=self.post_bandwidth)
         self.break_index = break_index
         self.gamma = gamma
         self.hyperparams = {
             'gamma': gamma,
             'break_index': break_index,
-            'model_pre': model_pre,
-            'model_post': model_post
+            'pre_bandwidth': pre_bandwidth,
+            'post_bandwidth': post_bandwidth,
+            'kernel': kernel,
+            'local_engine': local_engine
         }
         self.post_model_is_active = False
 
