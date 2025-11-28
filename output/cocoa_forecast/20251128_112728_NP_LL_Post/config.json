@@ -1,0 +1,35 @@
+{
+    "model_name": "NP_LL_Post",
+    "run_timestamp": "20251128",
+    "test_set_start_date": "2025-01-02",
+    "structural_break_index": 5301,
+    "structural_break_date": "2019-07-15",
+    "regressors": [
+        "PRCP_anom_mean",
+        "TAVG_anom_mean",
+        "PRCP_anom_std",
+        "TAVG_anom_std"
+    ],
+    "target": "log_return",
+    "hyperparameter_grid": {
+        "bandwidth": [
+            0.040454529382166614,
+            0.06748222219456768,
+            0.11256713109421207,
+            0.1877732918493246,
+            0.31322472900568177,
+            0.5224903387187207,
+            0.8715664146985383,
+            1.4538604045641608,
+            2.425185321867372,
+            4.045452938216661
+        ]
+    },
+    "optimal_hyperparameters": {
+        "bandwidth": 4.045452938216661
+    },
+    "mfv_best_score": 0.002895104633905155,
+    "bias_variance_rounds": 50,
+    "kernel": "GaussianKernel",
+    "polynomial_order": 1
+}

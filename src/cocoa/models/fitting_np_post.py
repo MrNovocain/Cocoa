@@ -1,13 +1,13 @@
 from functools import partial
 
-from ..experiments.runner import ExperimentRunner
-from . import NPRegimeModel, GaussianKernel, LocalPolynomialEngine, CocoaDataset
-from .assets import (
+from cocoa.experiments.runner import ExperimentRunner
+from cocoa.models import NPRegimeModel, GaussianKernel, LocalPolynomialEngine, CocoaDataset
+from cocoa.models.assets import (
     PROCESSED_DATA_PATH,
     OOS_START_DATE,
     DEFAULT_FEATURE_COLS,  # Using same features as RF/XGB for comparability
     DEFAULT_TARGET_COL,
-    Break_ID_ONE_BASED,
+    BREAK_ID_ONE_BASED,
 )
 
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
     )
-    index = dataset.get_1_based_index_from_date("2019-07-15") #From grid search
+    index = dataset.get_1_based_index_from_date("2019-10-01") #From grid search
     
     # 3. Configure and run the Non-Parametric experiment
     np_experiment = ExperimentRunner(
