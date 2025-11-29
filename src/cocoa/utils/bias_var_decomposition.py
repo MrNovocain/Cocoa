@@ -142,9 +142,6 @@ def bias_variance_decomposition(
         random_seed=random_seed,
     )
     return decomposer.run(X_train, y_train, X_test, y_test)
-test_bias_var_decomposition.py
-+219
--0
 
 import os
 import sys
