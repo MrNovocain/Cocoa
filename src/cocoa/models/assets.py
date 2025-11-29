@@ -61,7 +61,7 @@ XGB_PARAM_GRID = {
     "colsample_bytree": [0.7, 1.0],
 }
 
-NP_BANDWIDTH_GRID = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+# NP_BANDWIDTH_GRID = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
 
 
 

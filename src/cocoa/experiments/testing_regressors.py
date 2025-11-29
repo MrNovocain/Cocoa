@@ -9,7 +9,7 @@ import itertools
 from functools import partial
 import pandas as pd
 
-from ..experiments.runner import ExperimentRunner
+from .runner import ExperimentRunner
 from ..models import NPRegimeModel, GaussianKernel, LocalPolynomialEngine, CocoaDataset
 from ..models.assets import (
     PROCESSED_DATA_PATH,

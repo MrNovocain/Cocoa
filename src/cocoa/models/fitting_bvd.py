@@ -7,7 +7,7 @@ from datetime import datetime
 
 from cocoa.experiments.runner import ExperimentRunner
 from cocoa.models import NPRegimeModel, GaussianKernel, LocalPolynomialEngine
-from .assets import (
+from cocoa.models.assets import (
     PROCESSED_DATA_PATH,
     OOS_START_DATE,
     DEFAULT_FEATURE_COLS,  # Using same features as RF/XGB for comparability
@@ -46,6 +46,8 @@ if __name__ == "__main__":
             poly_order=engine.order,
             sample_start_index=trimmed_date,
             save_results=False,
+            run_bvd=True,
+            n_bootstrap_rounds=2,
         )
         # Check if the training set is too small before running
         if np_experiment.get_train_size() < min_train_size:
