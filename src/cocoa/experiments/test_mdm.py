@@ -102,7 +102,7 @@ if __name__ == '__main__':
     engine = LocalPolynomialEngine(order=1)
     NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=engine)
 
-    runner_benchmark = ExperimentRunner(
+    runner_candidate_np_full = ExperimentRunner(
         model_name="np_full",
         model_class=NPModelPartial,
         feature_cols=DEFAULT_FEATURE_COLS,
@@ -116,24 +116,39 @@ if __name__ == '__main__':
     )
 
     # --- 2. Configure the candidate model runner (e.g., RF model) ---
-    # runner_candidate = ExperimentRunner(
-    #     model_name="ml_rf_full",
-    #     model_class=RFModel,
-    #     feature_cols=DEFAULT_FEATURE_COLS,
-    #     target_col=DEFAULT_TARGET_COL,
-    #     data_path=PROCESSED_DATA_PATH,
-    #     oos_start_date=OOS_START_DATE,
-    #     save_results=True,
-    #     run_bvd=False
-    # )
-    runner_candidate_np_combo = ConvexComboExperimentRunner(
+    runner_benchmark_rf_full = ExperimentRunner(
+        model_name="ml_rf_full",
+        model_class=RFModel,
+        feature_cols=DEFAULT_FEATURE_COLS,
+        target_col=DEFAULT_TARGET_COL,
+        data_path=PROCESSED_DATA_PATH,
+        oos_start_date=OOS_START_DATE,
+        save_results=True,
+        run_bvd=False
+    )
+    runner_candidiate_rf_combo = ConvexComboExperimentRunner(
+        combo_type='ML',
+        model_name="RF_Combo",
+        feature_cols=DEFAULT_FEATURE_COLS,
+        target_col=DEFAULT_TARGET_COL,
+        data_path=PROCESSED_DATA_PATH,
+        oos_start_date=OOS_START_DATE,
+        sample_start_index= BREAK_ID_ONE_BASED,  # Structural break, required for Combo
+        save_results=True,  # Must be True to get OOS MSE
+    )
+
+
+
+
+
+    runner_benchmark_np_combo = ConvexComboExperimentRunner(
             combo_type='NP',
             model_name="NP_LL_Combo",
             feature_cols=DEFAULT_FEATURE_COLS,
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
             oos_start_date=OOS_START_DATE,
-            sample_start_index= 6130,  # Structural break, required for Combo model
+            sample_start_index= BREAK_ID_ONE_BASED,  # Structural break, required for Combo model
             poly_order=1,
             save_results=True,  # Must be True to get OOS MSE
         )
@@ -152,6 +167,8 @@ if __name__ == '__main__':
 
 
 
+
     # --- 3. Initialize and run the MDM test ---
-    mdm_runner = MDMTestRunner(runner_benchmark=runner_benchmark, runner_candidate=runner_candidate_np_combo, h=1)
+    mdm_runner = MDMTestRunner(runner_benchmark=runner_benchmark_rf_full, runner_candidate=runner_candidiate_rf_combo, h=1)
     mdm_runner.run()
+    
