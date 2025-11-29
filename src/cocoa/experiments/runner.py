@@ -113,16 +113,16 @@ class ExperimentRunner:
         self.kernel_name = kernel_name
         self.poly_order = poly_order
         self.start_date = None
-        if self.run_bvd is False:
+        self.run_bvd = run_bvd
+        if self.run_bvd:
+            print("Bias-Variance Decomposition will be run for this experiment.")
+            self.n_bootstrap_rounds = n_bootstrap_rounds
+        else:
             print("Bias-Variance Decomposition will NOT be run for this experiment.")
             self.n_bootstrap_rounds = 0
-        else:
-            print("Bias-Variance Decomposition will be run for this experiment.")
-        self.n_bootstrap_rounds = n_bootstrap_rounds
         self.param_grid = None
         self.gamma = None
         self.save_results = save_results
-        self.run_bvd = run_bvd
         self.output_dir = None
         self.data_set = None
         self.split = None
@@ -350,7 +350,7 @@ class ExperimentRunner:
             "variance": bv_variance,
             # The "plain bias" is the average error, sqrt(bias_squared) is its magnitude.
             # We can't recover the sign, but we can show the non-squared bias magnitude.
-            "bias_plain": np.sqrt(bv_bias_sq),
+            "bias_plain": np.sqrt(bv_bias_sq) if bv_bias_sq is not None else None,
         }
         with open(os.path.join(self.output_dir, "bias_variance_decomposition.json"), "w") as f:
             json.dump(decomposition_results, f, indent=4, cls=NpEncoder)
