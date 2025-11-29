@@ -1,4 +1,4 @@
-from cocoa.experiments.runner import NPComboExperimentRunner
+from cocoa.experiments.runner import ConvexComboExperimentRunner
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -32,7 +32,8 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
 
     for i in range(start_index, end_index + 1, jump_size):
         print(f"\n--- Running for sample_start_index: {i} ---")
-        runner = NPComboExperimentRunner(
+        runner = ConvexComboExperimentRunner(
+            combo_type='NP',
             model_name="NP_LL_Combo",
             feature_cols=DEFAULT_FEATURE_COLS,
             break_date=dataset.get_date_from_1_based_index(i),
@@ -71,7 +72,8 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
 
         # --- Now, run the model one last time with the optimal break date to get the final OOS performance ---
         print("\n--- Evaluating final model with optimal hyperparameters on the OOS test set ---")
-        final_runner = NPComboExperimentRunner(
+        final_runner = ConvexComboExperimentRunner(
+            combo_type='NP',
             model_name="NP_LL_Combo_Final",
             feature_cols=DEFAULT_FEATURE_COLS,
             break_date=best_break_date,
@@ -130,17 +132,18 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
 
 if __name__ == "__main__":
     # Define the index range you want to analyze
-    run_np_combo_cv_for_gamma_analysis(start_index=BREAK_ID_ONE_BASED-3, end_index=BREAK_ID_ONE_BASED+3, jump_size=1)
-    # runner = NPComboExperimentRunner(
-    #         model_name="NP_LL_Combo",
-    #         feature_cols=DEFAULT_FEATURE_COLS,
-    #         break_date=sample_start_index,
-    #         target_col=DEFAULT_TARGET_COL,
-    #         data_path=PROCESSED_DATA_PATH,
-    #         oos_start_date=OOS_START_DATE,
-    #         sample_start_index= sample_start_index,  # Structural break, required for Combo model
-    #         poly_order=1,
-    #         save_results=True,  # Must be True to get OOS MSE
-    #     )
+    # run_np_combo_cv_for_gamma_analysis(start_index=BREAK_ID_ONE_BASED-3, end_index=BREAK_ID_ONE_BASED+3, jump_size=1)
+    runner = ConvexComboExperimentRunner(
+            combo_type='NP',
+            model_name="NP_LL_Combo",
+            feature_cols=DEFAULT_FEATURE_COLS,
+            break_date=sample_start_index,
+            target_col=DEFAULT_TARGET_COL,
+            data_path=PROCESSED_DATA_PATH,
+            oos_start_date=OOS_START_DATE,
+            sample_start_index= sample_start_index,  # Structural break, required for Combo model
+            poly_order=1,
+            save_results=True,  # Must be True to get OOS MSE
+        )
 
-    # run_results = runner.run()
+    run_results = runner.run()

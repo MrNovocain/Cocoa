@@ -34,9 +34,9 @@ Q_VALUE = 4  # Number of block for MFV validation
 
 RF_PARAM_GRID = {
     "n_estimators": [200, 500],
-    "max_depth": [3, 5, None],
+    "max_depth": [5, None],
     "min_samples_leaf": [1, 5, 20],
-    "max_features": ["sqrt", "log2"],
+    "max_features": ["sqrt"],
 }
 
 # ============================================================
@@ -57,6 +57,7 @@ XGB_PARAM_GRID = {
     "max_depth": [3, 5],
     "learning_rate": [0.05, 0.1],
     "subsample": [0.7, 1.0],
+    "colsample_bytree": [0.7, 1.0],
 }
 
 NP_BANDWIDTH_GRID = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]

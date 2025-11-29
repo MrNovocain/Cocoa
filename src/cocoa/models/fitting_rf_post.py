@@ -11,17 +11,18 @@ from cocoa.models.assets import (
     OOS_START_DATE,
     DEFAULT_FEATURE_COLS,
     DEFAULT_TARGET_COL,
+    BREAK_ID_ONE_BASED,
 )
 
 if __name__ == "__main__":
-    # Configure and run the Random Forest experiment on the FULL dataset
-    rf_experiment = ExperimentRunner(
-        model_name="RF_Full",
+    # Configure and run the Random Forest experiment on POST-BREAK data
+    rf_post_experiment = ExperimentRunner(
+        model_name="RF_Post",
         model_class=RFModel,
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
         oos_start_date=OOS_START_DATE,
-        # No sample_start_index is provided, so it runs on the full history
+        sample_start_index=BREAK_ID_ONE_BASED,  # This is the key change
     )
-    rf_experiment.run()
+    rf_post_experiment.run()
