@@ -405,7 +405,7 @@ class ConvexComboExperimentRunner(ExperimentRunner):
     hyperparameters and the combination weight (gamma).
     """
 
-    def __init__(self, combo_type: str, *args, **kwargs):
+    def __init__(self, combo_type: str, **kwargs):
         # This __init__ is "standalone". It replicates the necessary setup from
         # ExperimentRunner.__init__ without calling super().__init__() because
         # the parent's data trimming logic is not suitable for the combo model.

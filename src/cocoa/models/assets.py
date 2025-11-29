@@ -22,7 +22,7 @@ DEFAULT_FEATURE_COLS = [
     # "log_price_lag2",
     # "N_stations",
 ]
-DEFAULT_TARGET_COL = "log_return"
+DEFAULT_TARGET_COL = "log_return_forecast_target"
 
 
 Q_VALUE = 4  # Number of block for MFV validation
