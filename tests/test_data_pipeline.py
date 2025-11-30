@@ -86,3 +86,4 @@ def test_build_features_outputs_expected_columns(tmp_path):
     assert (processed_dir / "cocoa_test.csv").exists()
     assert result["log_return_forecast_target"].notna().all()
 
+
