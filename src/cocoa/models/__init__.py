@@ -3,6 +3,7 @@ from .cocoa_data import CocoaDataset, TrainTestSplit
 from .mfv_CV import MFVValidator, MFVConvexComboValidator
 from .ml_models import RFModel, XGBModel
 from .evaluation import evaluate_forecast
+from .krr_model import KRRModel
 from .plot import plot_forecast
 from .np_base import BaseKernel, BaseLocalEngine
 from .np_kernels import GaussianKernel, EpanechnikovKernel

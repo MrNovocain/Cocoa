@@ -8,13 +8,13 @@ for different models.
 # ============================================================
 # General Experiment Setup
 # ============================================================
-BREAK_ID_ONE_BASED = 6130 #3594 previous last break date 
+BREAK_ID_ONE_BASED = 6117 #3594 previous last break date 4903
 # BREAK_DATE = "2022-07-05"
 OOS_START_DATE = "2025-01-02"
 PROCESSED_DATA_PATH = "w:/Research/NP/Cocoa/data/processed/cocoa_ghana_full.csv"
 
 DEFAULT_FEATURE_COLS = [
-    "PRCP_anom_mean",
+    # "PRCP_anom_mean",
     # "TAVG_anom_mean",
     # "PRCP_anom_std",
     # "TAVG_anom_std",
@@ -61,6 +61,16 @@ XGB_PARAM_GRID = {
     "colsample_bytree": [0.7, 1.0],
 }
 
+# ============================================================
+# Kernel Ridge Regression (KRR) Model Configuration
+# ============================================================
+
+KRR_PARAM_GRID = {
+    "alpha": [0.1, 1.0, 10.0],
+    "kernel": ["rbf", "poly"],
+    "gamma": [0.01, 0.1, 1.0], # For 'rbf' and 'poly' kernels
+    "degree": [1, 2, 3], # For 'poly' kernel
+}
 # NP_BANDWIDTH_GRID = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
 
 

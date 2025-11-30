@@ -1,11 +1,16 @@
 """
 Structural break detection methods for time series regression.
 """
+from functools import partial
 import numpy as np
 import pandas as pd
 from typing import Protocol, Optional, Union
 
-
+from tqdm import tqdm
+from cocoa.models.mfv_CV import MFVValidator
+from cocoa.models.np_engines import LocalPolynomialEngine
+from cocoa.models.np_kernels import GaussianKernel
+from cocoa.models.bandwidth import create_precentered_grid
 class Kernel(Protocol):
     """Protocol for kernel functions."""
     def __call__(self, u: np.ndarray) -> np.ndarray:
@@ -124,11 +129,10 @@ from cocoa.models.assets import (
     DEFAULT_TARGET_COL,
 )
 from cocoa.models.cocoa_data import CocoaDataset
-from cocoa.models.np_kernels import GaussianKernel
-from cocoa.models.np_engines import LocalPolynomialEngine
 from cocoa.models.np_regime import NPRegimeModel
-from cocoa.models.mfv_CV import MFVValidator
-from cocoa.models.bandwidth import create_precentered_grid
+
+
+
 
 
 def mfv_mse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -172,50 +176,49 @@ if __name__ == "__main__":
     y_train_np = split.y_train.values.flatten()
     
     T, d = X_train_np.shape
-
+    
     # 2. Find the optimal pilot bandwidth `h` using MFV cross-validation.
     print("\nFinding optimal pilot bandwidth using MFV cross-validation...")
     kernel = GaussianKernel()
     ll_engine = LocalPolynomialEngine(order=1)
     
-    # Define a grid of bandwidths to search.
-    bandwidth_grid = create_precentered_grid(T=T, d=d)
-
-    Q = 5  # Number of MFV blocks
-    mfv_splits = _create_mfv_splits(T, Q)
+    # Define a partial constructor for the NPRegimeModel
+    NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=ll_engine)
     
+    bandwidth_grid = create_precentered_grid(T=T, d=d)
+    n_folds = 5
+
+    # Instantiate MFVValidator
+    mfv_validator = MFVValidator(Q=n_folds)
+
+    # Prepare data for MFVValidator
+    X_train_df = pd.DataFrame(X_train_np, columns=split.X_train.columns)
+    y_train_s = pd.Series(y_train_np)
+
+    # Validate bandwidths using MFVValidator
     scores = []
-    for h in bandwidth_grid:
-        print(f"  Testing h = {h:.4f}...")
-        preds = np.zeros_like(y_train_np)
-        for train_indices, val_indices in mfv_splits:
-            X_mfv_train, y_mfv_train = X_train_np[train_indices], y_train_np[train_indices]
-            if len(X_mfv_train) == 0:
-                # Skip first fold where training set is empty
-                continue
-            X_mfv_val = X_train_np[val_indices]
+    mfv_validator._set_block_size(T)  # Set block size before scoring
 
-            # The engine expects pandas inputs
-            X_mfv_train_df = pd.DataFrame(X_mfv_train)
-            y_mfv_train_s = pd.Series(y_mfv_train)
-            X_mfv_val_df = pd.DataFrame(X_mfv_val)
-
-            preds[val_indices] = ll_engine.fit(X_mfv_train_df, y_mfv_train_s, X_mfv_val_df, h, kernel)
-        
-        score = mfv_mse(y_train_np, preds)
+    for h in tqdm(bandwidth_grid, desc="Validating bandwidths"):
+        params = {'bandwidth': h}
+        score = mfv_validator.score(
+            model_class=NPModelPartial,
+            X_train=X_train_df,
+            y_train=y_train_s,
+            params=params
+        )
         scores.append(score)
 
     best_idx = np.argmin(scores)
     pilot_bandwidth = bandwidth_grid[best_idx]
     best_score = scores[best_idx]
-    print(f"\nFound best pilot bandwidth: h = {pilot_bandwidth:.4f} (MFV MSE: {best_score:.4f})")
+    print(f"Optimal pilot bandwidth: h={pilot_bandwidth:.4f} (MFV MSE: {best_score:.6f})")
 
     # 3. Get pilot estimates `m_hat` using the full training data and best bandwidth
     print(f"\nCalculating pilot estimates with optimal bandwidth h={pilot_bandwidth:.4f}...")
     m_hat = ll_engine.fit(split.X_train, split.y_train, split.X_train, pilot_bandwidth, kernel)
 
     # 4. Run the break date estimation with the pilot estimates
-    print(f"\nEstimating break date with optimal pilot bandwidth h={pilot_bandwidth:.4f}...")
     T1_hat = estimate_break_mohr_ll(
         y=y_train_np,
         X=X_train_np,
