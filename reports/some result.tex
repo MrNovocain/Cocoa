@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+% Images live one level up from reports/
+\graphicspath{{../output/}{../output/experiment_results/}{../output/cocoa_forecast/20251201_180239_NP_LL_Combo/}}
+
+\title{Weighted Local Linear Forecasting Under an El Ni\~no Structural Break:\\
+A Practical Extension of Cai--Gao--Selk with ML Benchmarks}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We implement the Cai--Gao--Selk (CGS) weighted local linear (WLL) estimator in a real, event-driven financial setting: daily cocoa prices around an El Ni\~no supply shock. We estimate the structural break nonparametrically, tune bandwidths and the combination weight $\gamma$ with multifold forward validation (MFV), and compare WLL to Random Forest and XGBoost, including their pre/post convex combinations. WLL attains the lowest post-break MSFE in our runs and adapts as fast as ML methods in the early post-break window, while remaining interpretable.
+\end{abstract}
+
+\section{Overview and headline findings}
+\begin{itemize}
+  \item Overall post-break OOS, WLL has the lowest MSFE; Pre-Break LL is a close second (Table~\ref{tab:msfe}).
+  \item ML convex combos (RF/XGB) improve on single-regime RF/XGB but do not beat WLL.
+  \item Early post-break, all models are close; WLL tracks the best ML closely (Figure~\ref{fig:cum_se}).
+  \item Modified DM tests rarely reject equality at 5\%; some 10\% evidence that WLL outperforms plain RF/XGB (Table~\ref{tab:dm}).
+\end{itemize}
+
+\section{Data, break, and tuning}
+We anchor the break on the El Ni\~no event and also estimate it via Mohr--Selk (2020) on MFV-tuned local linear residuals. The detected and configured break dates are close, and volatility shifts after the break (Figure~\ref{fig:break_detect}).
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\linewidth]{gamma_vs_break_date_6114_6120_1.png}
+  \caption{Detected vs configured break date and stability of $\gamma$ around the El Ni\~no event.}
+  \label{fig:break_detect}
+\end{figure}
+
+\section{Models and MFV setup}
+\begin{itemize}
+  \item \textbf{NP layer}: Pre/Post LL (Epanechnikov), bandwidths by MFV; WLL combines them with $\gamma$ by MFV on post-break data.
+  \item \textbf{ML layer}: RF and XGB tuned by MFV; RF/XGB convex combos mirror WLL's $\gamma$ logic.
+  \item \textbf{Evaluation}: Post-break OOS MSFE; early-window cumulative squared error; modified DM for pairwise MSFE.
+\end{itemize}
+
+\section{Results}
+\subsection{MSFE rankings}
+\begin{table}[h]
+\centering
+\caption{Post-break OOS MSFE (run: \texttt{msfe\_results\_20251201\_191015.csv})}
+\label{tab:msfe}
+\begin{tabular}{lccc}
+\toprule
+Model & MSFE & RMSFE & Rank \\
+\midrule
+WLL & 0.0009425 & 0.03070 & 1 \\
+Pre-Break LL & 0.0009429 & 0.03071 & 2 \\
+XGB Combo & 0.0009501 & 0.03082 & 3 \\
+RF Combo & 0.0010025 & 0.03166 & 4 \\
+Post-Break LL & 0.0011006 & 0.03318 & 5 \\
+Random Forest & 0.0012387 & 0.03520 & 6 \\
+XGBoost & 0.0013043 & 0.03611 & 7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\linewidth]{oos_forecast.png}
+  \caption{Post-break out-of-sample forecast trajectories across models.}
+  \label{fig:oos_forecast}
+\end{figure}
+
+\subsection{Early post-break adaptation}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\linewidth]{hypothesis_immediate_postbreak_20251130_214308.png}
+  \caption{Early post-break cumulative squared error (first window after the break).}
+  \label{fig:cum_se}
+\end{figure}
+
+\subsection{Modified DM tests}
+\begin{table}[h]
+\centering
+\caption{Modified DM statistics (post-break OOS; \texttt{mdm\_statistics\_20251201\_191015.csv})}
+\label{tab:dm}
+\begin{tabular}{lrrrrrrr}
+\toprule
+ & PreLL & PostLL & WLL & RF & XGB & RFc & XGBc \\
+\midrule
+PreLL & 0.00 & -1.22 & 0.06 & -1.73 & -1.93 & -0.81 & -0.34 \\
+PostLL & 1.22 & 0.00 & 1.28 & -3.22 & -3.32 & 1.72 & 1.39 \\
+WLL & -0.06 & -1.28 & 0.00 & -1.80 & -2.00 & -0.89 & -0.50 \\
+RF & 1.73 & 3.22 & 1.80 & 0.00 & -3.40 & 2.43 & 1.93 \\
+XGB & 1.93 & 3.32 & 2.00 & 3.40 & 0.00 & 2.66 & 2.13 \\
+RFc & 0.81 & -1.72 & 0.89 & -2.43 & -2.66 & 0.00 & 1.00 \\
+XGBc & 0.34 & -1.39 & 0.50 & -1.93 & -2.13 & -1.00 & 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Interpretation: ML as NP under a break (funnel)}
+\begin{itemize}
+  \item RF/XGB are treated as nonparametric regressors; pre/post fits are combined with $\gamma$, same as WLL.
+  \item WLL is the interpretable anchor; in this El Ni\~no break it matches or beats ML on MSFE.
+  \item Funnel: wide (flexible RF/XGB), middle (RF/XGB combos with $\gamma$), narrow (WLL). Here the funnel collapses toward WLL: ML does not dominate, and CGS-style combinations work for both kernels and trees.
+\end{itemize}
+
+\end{document}
