@@ -1,5 +1,6 @@
 import sys
 import os
+from pathlib import Path
 from functools import partial
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -99,5 +100,7 @@ if __name__ == "__main__":
     ax.tick_params(axis='x', rotation=45)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     file_name = f"bvd_vs_time_size_{len(results_df)}_{timestamp}.png"
-    plt.savefig(f"w:/Research/NP/Cocoa/output/{file_name}", bbox_inches="tight")
-    print(f"\nPlot of BVD components vs. start date saved to w:/Research/NP/Cocoa/output/{file_name}")
+    output_dir = Path(__file__).resolve().parents[3] / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    plt.savefig(str(output_dir / file_name), bbox_inches="tight")
+    print(f"\nPlot of BVD components vs. start date saved to {output_dir / file_name}")

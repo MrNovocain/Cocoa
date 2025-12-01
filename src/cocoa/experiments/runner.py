@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import json
 import pandas as pd
 import numpy as np
@@ -101,7 +102,7 @@ class ExperimentRunner:
         n_bootstrap_rounds: int = 50,
         save_results: bool = True,
         run_bvd: bool = False,
-        output_base_dir: str = "w:/Research/NP/Cocoa/output/cocoa_forecast",
+        output_base_dir: str = str(Path(__file__).resolve().parents[3] / "output" / "cocoa_forecast"),
     ):
         self.model_name = model_name
         self.model_class = model_class
@@ -448,7 +449,7 @@ class ConvexComboExperimentRunner(ExperimentRunner):
             raise ValueError("ConvexComboExperimentRunner requires a 'sample_start_index' to define the post-break period.")
 
         # --- 2. Replicate output directory setup from parent ---
-        output_base_dir = kwargs.get("output_base_dir", "w:/Research/NP/Cocoa/output/cocoa_forecast")
+        output_base_dir = kwargs.get("output_base_dir", str(Path(__file__).resolve().parents[3] / "output" / "cocoa_forecast"))
         if self.save_results:
             run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             self.output_dir = os.path.join(output_base_dir, f"{run_timestamp}_{self.model_name}")

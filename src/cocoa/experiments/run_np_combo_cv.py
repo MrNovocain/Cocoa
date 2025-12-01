@@ -1,4 +1,5 @@
 from cocoa.experiments.runner import ConvexComboExperimentRunner
+from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -10,27 +11,29 @@ from cocoa.models.assets import (
     BREAK_ID_ONE_BASED,
 )
 from cocoa.models.cocoa_data import CocoaDataset
-### Last detection 5334
-dataset = CocoaDataset(
-    csv_path=PROCESSED_DATA_PATH,
-    feature_cols=DEFAULT_FEATURE_COLS,
-    target_col=DEFAULT_TARGET_COL,
-)
-# sample_start_index = dataset.get_1_based_index_from_date("2012-09-06")
-sample_start_index = 6117
+
+### NOTE: avoid doing file I/O at module import time. Previously this module
+# instantiated `CocoaDataset(...)` at import which attempted to read the CSV
+# immediately and caused FileNotFoundError in kernels with stale state.
+# Instead, provide a small helper and a default sample start index constant.
+SAMPLE_START_INDEX = 6117
+
+def get_dataset():
+    """Return a fresh CocoaDataset instance (no I/O at import time)."""
+    return CocoaDataset(
+        csv_path=PROCESSED_DATA_PATH,
+        feature_cols=DEFAULT_FEATURE_COLS,
+        target_col=DEFAULT_TARGET_COL,
+    )
 
 def gamma_break_grid(start_index: int, end_index: int, jump_size: int = 1, save_plots: bool = True,
-                     output_dir: str = "w:/Research/NP/Cocoa/output"):
+                     output_dir: str = str(Path(__file__).resolve().parents[3] / "output")):
     """
     Sweep structural break indices, run NP convex combo CV, and collect gamma/CV metrics.
 
     Returns a DataFrame with break_index, break_date, gamma, in_sample_cv_mse, oos_mse.
     """
-    dataset_local = CocoaDataset(
-        csv_path=PROCESSED_DATA_PATH,
-        feature_cols=DEFAULT_FEATURE_COLS,
-        target_col=DEFAULT_TARGET_COL,
-    )
+    dataset_local = get_dataset()
     rows = []
 
     for idx in range(start_index, end_index + 1, jump_size):
@@ -72,6 +75,7 @@ def gamma_break_grid(start_index: int, end_index: int, jump_size: int = 1, save_
 
         plt.tight_layout()
         file_name = f"gamma_and_cv_vs_break_date_{start_index}_{end_index}_{jump_size}.png"
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
         plt.savefig(f"{output_dir}/{file_name}")
 
     return df
@@ -119,7 +123,7 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
     if valid_results:
         best_break_index = min(valid_results, key=lambda k: valid_results[k]['in_sample_cv_mse'])
         best_in_sample_mse = valid_results[best_break_index]['in_sample_cv_mse']
-        best_break_date = dataset.get_date_from_1_based_index(best_break_index)
+        best_break_date = get_dataset().get_date_from_1_based_index(best_break_index)
         gamma_for_best_model = valid_results[best_break_index]['gamma']
 
         print("\n--- Optimal Hyperparameters Found ---")
@@ -169,7 +173,8 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
         plt.ylabel('Optimal Gamma (Weight on Pre-Break Model)')
         plt.grid(True, which='both', linestyle='--', linewidth=0.5)
         file_name_gamma = f"gamma_vs_break_date_{start_index}_{end_index}_{jump_size}.png"
-        plt.savefig(f"w:/Research/NP/Cocoa/output/{file_name_gamma}", bbox_inches="tight")
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        plt.savefig(f"{output_dir}/{file_name_gamma}", bbox_inches="tight")
         plt.tight_layout()
         plt.show()
 
@@ -181,7 +186,8 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
         plt.ylabel('In-Sample Cross-Validation MSE')
         plt.grid(True, which='both', linestyle='--', linewidth=0.5)
         file_name_mse = f"mse_vs_break_date_{start_index}_{end_index}_{jump_size}.png"
-        plt.savefig(f"w:/Research/NP/Cocoa/output/{file_name_mse}", bbox_inches="tight")
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        plt.savefig(f"{output_dir}/{file_name_mse}", bbox_inches="tight")
         plt.tight_layout()
         plt.show()
 
