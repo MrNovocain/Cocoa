@@ -361,4 +361,4 @@ def test_bvd_with_np_combo_model(toy_dataset):
 
     assert mse >= 0
     assert bias_sq >= 0
-    assert var >= 0
+    assert var >= 0command:python.viewOutput
