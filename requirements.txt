@@ -10,4 +10,7 @@ tqdm
 python-dotenv
 jupyter
 ipykernel
-torch
+
+# For GPU support, install PyTorch manually using the command from the official website:
+# https://pytorch.org/get-started/locally/
+# Example for CUDA 11.8: pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118

@@ -18,6 +18,64 @@ dataset = CocoaDataset(
 )
 # sample_start_index = dataset.get_1_based_index_from_date("2012-09-06")
 sample_start_index = 6117
+
+def gamma_break_grid(start_index: int, end_index: int, jump_size: int = 1, save_plots: bool = True,
+                     output_dir: str = "w:/Research/NP/Cocoa/output"):
+    """
+    Sweep structural break indices, run NP convex combo CV, and collect gamma/CV metrics.
+
+    Returns a DataFrame with break_index, break_date, gamma, in_sample_cv_mse, oos_mse.
+    """
+    dataset_local = CocoaDataset(
+        csv_path=PROCESSED_DATA_PATH,
+        feature_cols=DEFAULT_FEATURE_COLS,
+        target_col=DEFAULT_TARGET_COL,
+    )
+    rows = []
+
+    for idx in range(start_index, end_index + 1, jump_size):
+        runner = ConvexComboExperimentRunner(
+            combo_type="NP",
+            model_name="NP_LL_Combo",
+            feature_cols=DEFAULT_FEATURE_COLS,
+            target_col=DEFAULT_TARGET_COL,
+            data_path=PROCESSED_DATA_PATH,
+            oos_start_date=OOS_START_DATE,
+            sample_start_index=idx,
+            poly_order=1,
+            save_results=False,
+        )
+        res = runner.run()
+        rows.append({
+            "break_index": idx,
+            "break_date": dataset_local.get_date_from_1_based_index(idx),
+            "gamma": getattr(runner, "gamma", None),
+            "in_sample_cv_mse": res.get("in_sample_cv_mse"),
+            "oos_mse": res.get("oos_mse"),
+        })
+
+    df = pd.DataFrame(rows).sort_values("break_index").reset_index(drop=True)
+
+    if save_plots and not df.empty:
+        fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+
+        axes[0].plot(df["break_date"], df["gamma"], marker="o", color="#2ECC71")
+        axes[0].set_ylabel("Optimal gamma")
+        axes[0].set_title("Gamma vs break date")
+        axes[0].grid(True, linestyle="--", alpha=0.5)
+
+        axes[1].plot(df["break_date"], df["in_sample_cv_mse"], marker="x", color="#E74C3C")
+        axes[1].set_xlabel("Break date")
+        axes[1].set_ylabel("In-sample CV MSE")
+        axes[1].set_title("CV MSE vs break date")
+        axes[1].grid(True, linestyle="--", alpha=0.5)
+
+        plt.tight_layout()
+        file_name = f"gamma_and_cv_vs_break_date_{start_index}_{end_index}_{jump_size}.png"
+        plt.savefig(f"{output_dir}/{file_name}")
+
+    return df
+
 def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
     """
     Loops over a range of sample_start_index values, runs the NPConvexCombinationModel
