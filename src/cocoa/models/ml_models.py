@@ -3,11 +3,28 @@ import numpy as np
 from abc import abstractmethod
 from typing import Any, Dict
 
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor as SklearnRandomForestRegressor
 import xgboost as xgb
 
 from .assets import RF_PARAM_GRID, XGB_PARAM_GRID
 from .base_model import BaseModel
+
+try:
+    from cuml.ensemble import RandomForestRegressor as CuMLRandomForestRegressor
+    _HAS_CUML = True
+except ImportError:  # GPU fallback to CPU implementation
+    CuMLRandomForestRegressor = None
+    _HAS_CUML = False
+
+
+def _xgb_gpu_available() -> bool:
+    """Returns True when the installed XGBoost build has CUDA support."""
+    has_cuda_check = getattr(xgb.core, "_has_cuda_support", None)
+    try:
+        return bool(has_cuda_check and has_cuda_check())
+    except Exception:
+        print("GPU not available")
+        return False
 
 
 class BaseSklearnModel(BaseModel):
@@ -38,7 +55,7 @@ class BaseSklearnModel(BaseModel):
         """
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before calling predict().")
-        return self.model.predict(X)
+        return np.asarray(self.model.predict(X))
 
     def get_params(self) -> Dict[str, Any]:
         """Returns the hyperparameters of the model."""
@@ -46,7 +63,7 @@ class BaseSklearnModel(BaseModel):
 
 
 class RFModel(BaseSklearnModel):
-    """A wrapper for the scikit-learn RandomForestRegressor."""
+    """Random Forest model that prefers a GPU implementation when available."""
 
     def __init__(
         self,
@@ -54,6 +71,7 @@ class RFModel(BaseSklearnModel):
         max_features: float | str = RF_PARAM_GRID["max_features"][0],
         min_samples_leaf: int = RF_PARAM_GRID["min_samples_leaf"][0],
         random_state: int = 42,
+        use_gpu: bool = True,
         **kwargs: Any
     ):
         hyperparams = {
@@ -63,11 +81,19 @@ class RFModel(BaseSklearnModel):
             "random_state": random_state,
             **kwargs
         }
-        super().__init__(model_class=RandomForestRegressor, **hyperparams)
+        use_cuml = use_gpu and _HAS_CUML
+        model_class = CuMLRandomForestRegressor if use_cuml else SklearnRandomForestRegressor
+
+        # scikit-learn CPU fallback should use all cores
+        if not use_cuml:
+            hyperparams.setdefault("n_jobs", -1)
+
+        self.using_gpu = use_cuml
+        super().__init__(model_class=model_class, **hyperparams)
 
 
 class XGBModel(BaseSklearnModel):
-    """A wrapper for the XGBoost XGBRegressor."""
+    """XGBoost regressor configured for GPU acceleration when available."""
 
     def __init__(
         self,
@@ -77,6 +103,7 @@ class XGBModel(BaseSklearnModel):
         subsample: float = XGB_PARAM_GRID["subsample"][0],
         colsample_bytree: float = XGB_PARAM_GRID["colsample_bytree"][0],
         random_state: int = 42,
+        use_gpu: bool = True,
         **kwargs: Any
     ):
         hyperparams = {
@@ -89,4 +116,11 @@ class XGBModel(BaseSklearnModel):
             "objective": 'reg:squarederror', # Common default
             **kwargs
         }
+        gpu_enabled = use_gpu and _xgb_gpu_available()
+        if gpu_enabled:
+            hyperparams.update({"tree_method": "gpu_hist", "predictor": "gpu_predictor"})
+        else:
+            hyperparams.setdefault("tree_method", "hist")
+
+        self.using_gpu = gpu_enabled
         super().__init__(model_class=xgb.XGBRegressor, **hyperparams)

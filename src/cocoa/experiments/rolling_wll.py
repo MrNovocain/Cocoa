@@ -32,9 +32,11 @@ class RollingResultRow:
     detected_break_date: pd.Timestamp
     baseline: str
     msfe_wll: float
-    msfe_base: float
+    msfe_XGb: float
+    msfe_RF: float
     pi: float
     hit: bool
+    trimmed_flag:bool=False
 
 
 def build_descending_origins(start_idx: int, end_idx: int, step: int) -> List[int]:
@@ -95,6 +97,8 @@ class RollingWLLExperiment:
         self.dataset = dataset
         self.bestML = (None, inf)
         self.step = step
+        self.last_date = self.dataset.get_last_date()
+        self.records: List[RollingResultRow] = []
 
     def run_single_trial(
         self,
@@ -107,7 +111,7 @@ class RollingWLLExperiment:
         """
         if not self.break_candidates:
             raise ValueError("Pilot Mohr break not set. Call run_pilot_mohr first.")
-        break_index = self.break_candidates[0]
+
 
         # If the pilot break would be trimmed by the right-tail window, signal stop.
         if self.trim_window is not None:
@@ -116,7 +120,12 @@ class RollingWLLExperiment:
                 raise RuntimeError("Pilot break would be trimmed; stop rolling loop.")
 
         oos_start_date = self.dataset.dates.iloc[cur]
-
+        cur_date = self.dataset.get_date_from_1_based_index(cur)
+        if not self.last_date == cur_date:
+            mohr_test = MohrRunner(cur_date.strftime("%Y-%m-%d"))
+            break_index = mohr_test.run_mohr_break_detection()
+        else:
+            break_index = self.break_candidates[0]
 
         # WLL (NP combo) using ConvexComboExperimentRunner
         wll_runner = ConvexComboExperimentRunner(
@@ -180,9 +189,12 @@ class RollingWLLExperiment:
             detected_break_date=self.dataset.dates.iloc[break_index],
             baseline=self.bestML[0],
             msfe_wll=msfe_wll,
+            msfe_XGb=msfe_xgb,
+            msfe_RF=msfe_rf,
             msfe_base=msfe_base,
             pi=pi if pi is not None else float("nan"),
             hit=hit,
+            trimmed_flag=self.trim_window is not None,
         )
 
 
@@ -200,7 +212,7 @@ class RollingWLLExperiment:
         Run Mohr on full data once to define T_* and the right-tail trimming window.
         Store break candidate as 0-based index and keep trim window for stop checks.
         """
-        last_date = self.dataset.get_last_date()
+        last_date = self.last_date
         print(f"Last date in training set is {last_date}")
         mohr_runner = MohrRunner(
             oos_start_date= last_date,
