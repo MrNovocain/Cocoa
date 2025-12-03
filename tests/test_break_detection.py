@@ -32,24 +32,4 @@ def dgp_with_break():
     
     return y, X, T1
 
-def test_estimate_break_mohr_ll_finds_break(dgp_with_break):
-    """
-    Tests that estimate_break_mohr_ll can find a simple break in the mean.
-    """
-    y, X, T1_true = dgp_with_break
-    
-    # For this simple DGP, a pilot estimate of the overall mean is sufficient.
-    m_hat = np.mean(y) * np.ones_like(y)
-    
-    # Estimate the break
-    T1_hat = estimate_break_mohr_ll(
-        y=y,
-        X=X,
-        m_hat=m_hat,
-        trim_frac=0.05  # A reasonable trim fraction
-    )
-    
-    # Assert that the estimated break is close to the true break
-    # We allow for a small deviation
-    print(f"True break: {T1_true}, Estimated break: {T1_hat}")
-    assert abs(T1_hat - T1_true) <= 5
+

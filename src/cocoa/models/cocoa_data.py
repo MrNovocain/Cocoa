@@ -5,6 +5,8 @@ from typing import List, Optional, Tuple
 import pandas as pd
 
 from .data_types import TrainTestSplit as BaseTrainTestSplit
+from cocoa.models.assets import DEFAULT_FEATURE_COLS, DEFAULT_TARGET_COL, PROCESSED_DATA_PATH
+
 
 
 @dataclass
@@ -49,6 +51,9 @@ class BaseDataset(ABC):
     def split_oos_by_date(self, oos_start_date: str | pd.Timestamp) -> "TrainTestSplit":
         ...
 
+    def get_last_date(self) -> pd.Timestamp:
+        return self.dates.iloc[-1].strftime("%Y-%m-%d")
+
 
 class CocoaDataset(BaseDataset):
     """Convenience wrapper around the cocoa+Ghana weather panel.
@@ -62,9 +67,9 @@ class CocoaDataset(BaseDataset):
 
     def __init__(
         self,
-        csv_path: str,
-        feature_cols: List[str],
-        target_col: str,
+        csv_path: str = PROCESSED_DATA_PATH,
+        feature_cols: List[str] = DEFAULT_FEATURE_COLS,
+        target_col: str = DEFAULT_TARGET_COL,
         start_date: Optional[str | pd.Timestamp] = None,
     ) -> None:
         self.csv_path = csv_path

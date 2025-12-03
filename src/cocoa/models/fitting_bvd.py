@@ -45,7 +45,7 @@ if __name__ == "__main__":
             oos_start_date=DEFAULT_OOS_START_DATE,
             kernel_name=kernel.__class__.__name__,
             poly_order=engine.order,
-            sample_start_index=trimmed_date,
+            train_start_index=trimmed_date,
             save_results=False,
             run_bvd=True,
             n_bootstrap_rounds=2,

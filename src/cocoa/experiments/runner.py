@@ -69,6 +69,8 @@ class NpEncoder(json.JSONEncoder):
             return int(obj)
         if isinstance(obj, np.floating):
             return float(obj)
+        if isinstance(obj, pd.Timestamp):
+            return obj.isoformat()
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return super(NpEncoder, self).default(obj)
@@ -96,7 +98,7 @@ class ExperimentRunner:
         target_col: str,
         data_path: str,
         oos_start_date: str,
-        sample_start_index: int | None = None,
+        train_start_index: int | None = None,
         kernel_name: str | None = None,
         poly_order: int | None = None,
         n_bootstrap_rounds: int = 50,
@@ -109,7 +111,7 @@ class ExperimentRunner:
         self.feature_cols = feature_cols
         self.target_col = target_col
         self.data_path = data_path
-        self.sample_start_index = sample_start_index
+        self.train_start_index = train_start_index
         self.oos_start_date = oos_start_date
         self.kernel_name = kernel_name
         self.poly_order = poly_order
@@ -141,11 +143,14 @@ class ExperimentRunner:
 
         # --- Load and prepare data ---
         self.data_set = CocoaDataset(self.data_path, self.feature_cols, self.target_col)
-        print(f"indexing from {self.sample_start_index} ")
-        if self.sample_start_index is not None:
-            self.start_date = self.data_set.get_date_from_1_based_index(self.sample_start_index)
+
+        if self.train_start_index is not None:
+            self.start_date = \
+                self.data_set.get_date_from_1_based_index(self.train_start_index)
+            print(f"Training index start from{self.train_start_index} ")
         else:
             self.start_date = None
+            print("Training is full sample")
 
         self.data_set.trim_data_by_start_date(self.start_date)
         print(f"New start date after trimming: {self.data_set.dates.iloc[0].date()}")
@@ -213,14 +218,14 @@ class ExperimentRunner:
             else:
                 print("\n--- Skipping Bias-Variance Decomposition ---")
 
+            oos_metrics = evaluate_forecast(self.split.y_test, pd.Series(y_full_pred[-len(self.split.y_test):], index=self.split.y_test.index))
+
             # 4. Evaluate and save all artifacts
             if self.save_results:
                 self._save_artifacts(self.split.y_test, y_full_pred, final_model, best_params, best_mfv, avg_mse, avg_bias_sq, avg_variance)
                 print(f"Successfully completed run for {self.model_name}.")
-                oos_metrics = evaluate_forecast(self.split.y_test, pd.Series(y_full_pred[-len(self.split.y_test):], index=self.split.y_test.index))
             else:
                 print(f"Successfully completed run for {self.model_name} (without saving artifacts).")
-                oos_metrics = {} # Ensure oos_metrics exists
 
             return {
                 "best_params": best_params,
@@ -228,7 +233,7 @@ class ExperimentRunner:
                 "avg_mse": avg_mse,
                 "avg_bias_sq": avg_bias_sq,
                 "avg_variance": avg_variance,
-                "oos_mse": oos_metrics.get("mse") if self.save_results else None,
+                "oos_mse": oos_metrics.get("mse"),
                 "in_sample_cv_mse": best_mfv, # Expose the in-sample CV score
             }
 
@@ -316,7 +321,7 @@ class ExperimentRunner:
             "model_name": self.model_name,
             "run_timestamp": os.path.basename(self.output_dir).split('_')[0],
             "test_set_start_date": self.oos_start_date,
-            "structural_break_index": int(self.sample_start_index) if self.sample_start_index is not None else "not applied",
+            "structural_break_index": int(self.train_start_index) if self.train_start_index is not None else "not applied",
             "structural_break_date": str(pd.to_datetime(self.start_date).date()) if self.start_date is not None else "not applied",
             "regressors": self.feature_cols,
             "target": self.target_col,
@@ -422,7 +427,7 @@ class ConvexComboExperimentRunner(ExperimentRunner):
         self.feature_cols = kwargs['feature_cols']
         self.target_col = kwargs['target_col']
         self.data_path = kwargs['data_path']
-        self.sample_start_index = kwargs.get('sample_start_index')
+        self.break_index = kwargs.get('break_index')
         self.oos_start_date = kwargs['oos_start_date']
         self.poly_order = kwargs.get('poly_order')
         self.n_bootstrap_rounds = kwargs.get('n_bootstrap_rounds', 50)
@@ -430,6 +435,8 @@ class ConvexComboExperimentRunner(ExperimentRunner):
         self.run_bvd = kwargs.get('run_bvd', False)
         self.param_grid = None
         self.gamma = None
+        # Align with parent ExperimentRunner's attribute for saving artifacts
+        self.train_start_index = self.break_index
         self.split = None
         self.Q = Q_VALUE
 
@@ -445,8 +452,8 @@ class ConvexComboExperimentRunner(ExperimentRunner):
             self.sub_model_param_grid = kwargs.get('sub_model_param_grid', RF_PARAM_GRID)
             self.kernel_name = None # Not applicable
         
-        if self.sample_start_index is None:
-            raise ValueError("ConvexComboExperimentRunner requires a 'sample_start_index' to define the post-break period.")
+        if self.break_index is None:
+            raise ValueError("ConvexComboExperimentRunner requires a 'break_index' to define the post-break period.")
 
         # --- 2. Replicate output directory setup from parent ---
         output_base_dir = kwargs.get("output_base_dir", str(Path(__file__).resolve().parents[3] / "output" / "cocoa_forecast"))
@@ -464,11 +471,11 @@ class ConvexComboExperimentRunner(ExperimentRunner):
         self.data_set = CocoaDataset(self.data_path, self.feature_cols, self.target_col)
         
         # Define the break date from the full, untrimmed dataset.
-        self.start_date = self.data_set.get_date_from_1_based_index(self.sample_start_index)
+        self.start_date = self.data_set.get_date_from_1_based_index(self.break_index)
         print(f"Structural break date identified: {pd.to_datetime(self.start_date).date()}")
 
         # Split data into train/test based on OOS date. This uses the _split_data method
-        # from the parent class, which is fine.
+        # from the parent class
         self.split = self._split_data(self.data_set.df, self.oos_start_date)
         print(f"Full train/CV size: {self.split.T_train}, OOS test size: {self.split.T_test}")
 

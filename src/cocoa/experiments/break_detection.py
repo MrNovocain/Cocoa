@@ -33,7 +33,7 @@ def estimate_break_mohr_ll(
     center_X: bool = True,
     standardize_X: bool = True,
     trim_frac: Optional[float] = 0.05,
-) -> int:
+) -> tuple[int, int, int]:
     """
     Estimate single break index T1_hat using Mohr–Selk (2020) logic,
     using pre-computed pilot estimates for the conditional mean.
@@ -49,7 +49,9 @@ def estimate_break_mohr_ll(
             the full sample. Defaults to 0.05.
 
     Returns:
-        int: Estimated 1-based break index T1_hat in {1, ..., T-1}.
+        tuple[int, int, int]: (T1_hat, right_trim_start, right_trim_end), where
+            T1_hat is the estimated 1-based break index and the remaining two
+            entries describe the indices removed on the right tail (inclusive).
     """
     T, d = X.shape
 
@@ -94,30 +96,31 @@ def estimate_break_mohr_ll(
         D[k] = np.max(np.abs(S))
 
     # 7. Step 5 – Extract the break date
+    right_trim_start = T - 1 if T > 0 else 0
+    right_trim_end = T - 1 if T > 0 else 0
+
     if trim_frac is not None and trim_frac > 0:
         lo = int(np.floor(T * trim_frac))
-        # The search space for k is up to T-2 for a break at T-1
         hi = int(np.ceil(T * (1 - trim_frac)))
         if hi >= T:
             hi = T - 1
-
         search_slice = slice(lo, hi)
-        # If lo >= hi, search_slice will be empty, and argmax will raise an error.
-        # We handle this by checking if the slice has any elements.
         if search_slice.start < search_slice.stop:
             k_star_local = int(np.argmax(D[search_slice]))
             k_star = lo + k_star_local
+            right_trim_start = hi
+            right_trim_end = T - 1
         else:
-            # Fallback to full search if trim interval is invalid or empty
             k_star = int(np.argmax(D[:-1])) if T > 1 else 0
+            right_trim_start = T - 1 if T > 0 else 0
+            right_trim_end = T - 1 if T > 0 else 0
     else:
-        # Search over the whole sample, excluding the last point
         k_star = int(np.argmax(D[:-1])) if T > 1 else 0
 
     # Convert 0-based index k_star to 1-based time index T1_hat
     T1_hat = k_star + 1
 
-    return T1_hat
+    return T1_hat, right_trim_start, right_trim_end
 
 
 """
@@ -173,6 +176,8 @@ class MohrRunner:
     ):
         self.oos_start_date = oos_start_date
         self.dataset = dataset
+        self.trim_start = None
+        self.trim_end = None
 
 
 
@@ -230,20 +235,30 @@ class MohrRunner:
         m_hat = ll_engine.fit(split.X_train, split.y_train, split.X_train, pilot_bandwidth, kernel)
 
         # 4. Run the break date estimation with the pilot estimates
-        T1_hat = estimate_break_mohr_ll(
+        T1_hat, right_trim_start, right_trim_end = estimate_break_mohr_ll(
             y=y_train_np,
             X=X_train_np,
             m_hat=m_hat,
         )
+        self.trim_start = right_trim_start
+        self.trim_end = right_trim_end
 
         print(f"\nEstimated break date T1_hat (1-based index): {T1_hat}")
+        print(
+            "Right-tail trimming (start_idx, end_idx): "
+            f"({right_trim_start}, {right_trim_end})"
+        )
         return T1_hat
-
+    def get_trimmed_indexies(self):
+        if self.trim_start is None or self.trim_end is None:
+            raise ValueError("Run break test first")
+        else:
+            return self.trim_start, self.trim_end
 
 if __name__ == "__main__":
     runner = MohrRunner(
         oos_start_date=DEFAULT_OOS_START_DATE,
     )
     runner.run_mohr_break_detection()
-
+    print(runner.get_trimmed_indexies())
 # ============================================================

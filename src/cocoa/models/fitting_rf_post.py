@@ -23,6 +23,6 @@ if __name__ == "__main__":
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
         oos_start_date=DEFAULT_OOS_START_DATE,
-        sample_start_index=BREAK_ID_ONE_BASED,  # This is the key change
+        train_start_index=BREAK_ID_ONE_BASED,  # This is the key change
     )
     rf_post_experiment.run()
