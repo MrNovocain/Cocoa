@@ -36,3 +36,16 @@
 **Optional/Not Implemented Yet**
 - Mature-region tagging (break stability within a band of size k for at least m consecutive origins) and recomputed hit rate/average improvement only within that tag.
 - Global DM test over pooled errors in the mature region.
+
+## Implementation Skeleton (Not Implemented)
+- Module placement: `src/cocoa/experiments/run_rolling_wll.py` (runner with CLI) plus optional helpers (e.g., `rolling_wll_utils.py`).
+- Config/data prep: parse `start_idx`, `end_idx` (default last obs), `step`, baseline mode (`auto_best_ml` or `fixed_rf`), output dir, plot flags. Load processed data and features via existing notebook helpers; build train/test masks per origin.
+- Rolling controller: generate origins from `start_idx` down to `end_idx` stepping backward by `step`, with a final earliest-admissible origin when remaining span < step. Maintain `prior_breaks` (set of detected breaks from more-recent runs).
+- Per-origin pipeline:
+  1) Trim + Mohr: build candidate grid excluding `prior_breaks`; run Mohr; record break (absolute and origin-relative).
+  2) Model fit: tune pre/post local linear via MFV; tune post-break gamma via MFV; fit baseline(s) (RF/XGB) and pick baseline per mode.
+  3) Metrics: MSFE_WLL, MSFE_base; `PI = 1 - MSFE_WLL / MSFE_base`; hit flag (`PI > 0`); optional CSE velocity/acceleration deltas.
+  4) Persist row: append origin info, break info, baseline choice, metrics to a DataFrame.
+- Post-loop aggregation: write per-origin table to `output/rolling_experiments/rolling_results_<timestamp>.csv`; derive overall hit rate and average PI; keep mature-region tagging as a TODO hook.
+- Plots: break path vs origin (reverse time, with rolling variance band); PI vs break with shading where PI > 0; hit rate scalar/curve; PI distribution (box/violin/hist) over all origins (mature-region filter is a TODO hook). Save to the same output folder.
+- Guardrails: trimming grid must exclude `prior_breaks`; handle `step` > remaining span with a final iteration; keep feature/target setup identical to the notebook utilities.
