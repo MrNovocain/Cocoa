@@ -13,7 +13,7 @@ from .runner import ExperimentRunner
 from ..models import NPRegimeModel, GaussianKernel, LocalPolynomialEngine, CocoaDataset
 from ..models.assets import (
     PROCESSED_DATA_PATH,
-    OOS_START_DATE,
+    DEFAULT_OOS_START_DATE,
     XGB_FEATURE_COLS,
     DEFAULT_TARGET_COL,
 )
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             feature_cols=features,
             target_col=DEFAULT_TARGET_COL,
         )
-        split = dataset.split_oos_by_date(OOS_START_DATE)
+        split = dataset.split_oos_by_date(DEFAULT_OOS_START_DATE)
         T_train, d_train = split.X_train.shape
 
         # 2. Define parameter grid for the current experiment
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             feature_cols=features,
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
-            oos_start_date=OOS_START_DATE,
+            oos_start_date=DEFAULT_OOS_START_DATE,
             kernel_name=kernel.__class__.__name__,
             poly_order=engine.order,
         )

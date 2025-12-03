@@ -8,7 +8,7 @@ from cocoa.experiments.runner import ExperimentRunner
 from cocoa.models import RFModel
 from cocoa.models.assets import (
     PROCESSED_DATA_PATH,
-    OOS_START_DATE,
+    DEFAULT_OOS_START_DATE,
     DEFAULT_FEATURE_COLS,
     DEFAULT_TARGET_COL,
 )
@@ -21,7 +21,7 @@ if __name__ == "__main__":
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
-        oos_start_date=OOS_START_DATE,
+        oos_start_date=DEFAULT_OOS_START_DATE,
         # No sample_start_index is provided, so it runs on the full history
     )
     rf_experiment.run()

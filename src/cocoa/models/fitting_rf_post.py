@@ -8,7 +8,7 @@ from cocoa.experiments.runner import ExperimentRunner
 from cocoa.models import RFModel
 from cocoa.models.assets import (
     PROCESSED_DATA_PATH,
-    OOS_START_DATE,
+    DEFAULT_OOS_START_DATE,
     DEFAULT_FEATURE_COLS,
     DEFAULT_TARGET_COL,
     BREAK_ID_ONE_BASED,
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
-        oos_start_date=OOS_START_DATE,
+        oos_start_date=DEFAULT_OOS_START_DATE,
         sample_start_index=BREAK_ID_ONE_BASED,  # This is the key change
     )
     rf_post_experiment.run()

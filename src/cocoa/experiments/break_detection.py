@@ -11,11 +11,20 @@ from cocoa.models.mfv_CV import MFVValidator
 from cocoa.models.np_engines import LocalPolynomialEngine
 from cocoa.models.np_kernels import GaussianKernel
 from cocoa.models.bandwidth import create_precentered_grid
-class Kernel(Protocol):
-    """Protocol for kernel functions."""
-    def __call__(self, u: np.ndarray) -> np.ndarray:
-        ...
-    
+
+
+import numpy as np
+import pandas as pd
+
+from cocoa.models.assets import (
+    PROCESSED_DATA_PATH,
+    DEFAULT_OOS_START_DATE,
+    DEFAULT_FEATURE_COLS,
+    DEFAULT_TARGET_COL,
+)
+from cocoa.models.cocoa_data import BaseDataset, CocoaDataset
+from cocoa.models.np_regime import NPRegimeModel
+
 
 def estimate_break_mohr_ll(
     y: np.ndarray,
@@ -119,17 +128,7 @@ regressor to make it compatible with the break detection function, and then
 estimates the single structural break date on the training portion of the data.
 """
 
-import numpy as np
-import pandas as pd
 
-from cocoa.models.assets import (
-    PROCESSED_DATA_PATH,
-    OOS_START_DATE,
-    DEFAULT_FEATURE_COLS,
-    DEFAULT_TARGET_COL,
-)
-from cocoa.models.cocoa_data import CocoaDataset
-from cocoa.models.np_regime import NPRegimeModel
 
 
 
@@ -163,67 +162,88 @@ def _create_mfv_splits(T: int, Q: int):
         splits.append((train_indices, val_indices))
     return splits
 
-if __name__ == "__main__":
-    # 1. Load the dataset and get the training split
-    print("Loading and splitting data...")
-    dataset = CocoaDataset(
-        csv_path=PROCESSED_DATA_PATH,
-        feature_cols=DEFAULT_FEATURE_COLS,
-        target_col=DEFAULT_TARGET_COL,
-    )
-    split = dataset.split_oos_by_date(OOS_START_DATE)
-    X_train_np = split.X_train.values
-    y_train_np = split.y_train.values.flatten()
-    
-    T, d = X_train_np.shape
-    
-    # 2. Find the optimal pilot bandwidth `h` using MFV cross-validation.
-    print("\nFinding optimal pilot bandwidth using MFV cross-validation...")
-    kernel = GaussianKernel()
-    ll_engine = LocalPolynomialEngine(order=1)
-    
-    # Define a partial constructor for the NPRegimeModel
-    NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=ll_engine)
-    
-    bandwidth_grid = create_precentered_grid(T=T, d=d)
-    n_folds = 5
+class MohrRunner:
 
-    # Instantiate MFVValidator
-    mfv_validator = MFVValidator(Q=n_folds)
+    def __init__(self, oos_start_date: str, 
+                 dataset: BaseDataset = CocoaDataset(
+                                    csv_path=PROCESSED_DATA_PATH,   
+                                    feature_cols=DEFAULT_FEATURE_COLS,
+                                    target_col=DEFAULT_TARGET_COL,
+                             )
+    ):
+        self.oos_start_date = oos_start_date
+        self.dataset = dataset
 
-    # Prepare data for MFVValidator
-    X_train_df = pd.DataFrame(X_train_np, columns=split.X_train.columns)
-    y_train_s = pd.Series(y_train_np)
 
-    # Validate bandwidths using MFVValidator
-    scores = []
-    mfv_validator._set_block_size(T)  # Set block size before scoring
 
-    for h in tqdm(bandwidth_grid, desc="Validating bandwidths"):
-        params = {'bandwidth': h}
-        score = mfv_validator.score(
-            model_class=NPModelPartial,
-            X_train=X_train_df,
-            y_train=y_train_s,
-            params=params
+    def run_mohr_break_detection(self) -> int:
+        """Run the end-to-end Mohr break detection workflow on the cocoa data."""
+        # 1. Load the dataset and get the training split
+        print("Loading and splitting data...")
+        dataset = self.dataset
+        oos_start_date = self.oos_start_date
+        split = dataset.split_oos_by_date(oos_start_date)
+        X_train_np = split.X_train.values
+        y_train_np = split.y_train.values.flatten()
+
+        T, d = X_train_np.shape
+
+        # 2. Find the optimal pilot bandwidth `h` using MFV cross-validation.
+        print("\nFinding optimal pilot bandwidth using MFV cross-validation...")
+        kernel = GaussianKernel()
+        ll_engine = LocalPolynomialEngine(order=1)
+
+        # Define a partial constructor for the NPRegimeModel
+        NPModelPartial = partial(NPRegimeModel, kernel=kernel, local_engine=ll_engine)
+
+        bandwidth_grid = create_precentered_grid(T=T, d=d)
+        n_folds = 5
+
+        # Instantiate MFVValidator
+        mfv_validator = MFVValidator(Q=n_folds)
+
+        # Prepare data for MFVValidator
+        X_train_df = pd.DataFrame(X_train_np, columns=split.X_train.columns)
+        y_train_s = pd.Series(y_train_np)
+
+        # Validate bandwidths using MFVValidator
+        scores = []
+        mfv_validator._set_block_size(T)  # Set block size before scoring
+
+        for h in tqdm(bandwidth_grid, desc="Validating bandwidths"):
+            params = {'bandwidth': h}
+            score = mfv_validator.score(
+                model_class=NPModelPartial,
+                X_train=X_train_df,
+                y_train=y_train_s,
+                params=params
+            )
+            scores.append(score)
+
+        best_idx = np.argmin(scores)
+        pilot_bandwidth = bandwidth_grid[best_idx]
+        best_score = scores[best_idx]
+        print(f"Optimal pilot bandwidth: h={pilot_bandwidth:.4f} (MFV MSE: {best_score:.6f})")
+
+        # 3. Get pilot estimates `m_hat` using the full training data and best bandwidth
+        print(f"\nCalculating pilot estimates with optimal bandwidth h={pilot_bandwidth:.4f}...")
+        m_hat = ll_engine.fit(split.X_train, split.y_train, split.X_train, pilot_bandwidth, kernel)
+
+        # 4. Run the break date estimation with the pilot estimates
+        T1_hat = estimate_break_mohr_ll(
+            y=y_train_np,
+            X=X_train_np,
+            m_hat=m_hat,
         )
-        scores.append(score)
 
-    best_idx = np.argmin(scores)
-    pilot_bandwidth = bandwidth_grid[best_idx]
-    best_score = scores[best_idx]
-    print(f"Optimal pilot bandwidth: h={pilot_bandwidth:.4f} (MFV MSE: {best_score:.6f})")
+        print(f"\nEstimated break date T1_hat (1-based index): {T1_hat}")
+        return T1_hat
 
-    # 3. Get pilot estimates `m_hat` using the full training data and best bandwidth
-    print(f"\nCalculating pilot estimates with optimal bandwidth h={pilot_bandwidth:.4f}...")
-    m_hat = ll_engine.fit(split.X_train, split.y_train, split.X_train, pilot_bandwidth, kernel)
 
-    # 4. Run the break date estimation with the pilot estimates
-    T1_hat = estimate_break_mohr_ll(
-        y=y_train_np,
-        X=X_train_np,
-        m_hat=m_hat,
+if __name__ == "__main__":
+    runner = MohrRunner(
+        oos_start_date=DEFAULT_OOS_START_DATE,
     )
+    runner.run_mohr_break_detection()
 
-    print(f"\nEstimated break date T1_hat (1-based index): {T1_hat}")
 # ============================================================

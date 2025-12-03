@@ -5,7 +5,7 @@ import pandas as pd
 
 from cocoa.models.assets import (
     PROCESSED_DATA_PATH,
-    OOS_START_DATE,
+    DEFAULT_OOS_START_DATE,
     DEFAULT_FEATURE_COLS,
     DEFAULT_TARGET_COL,
     BREAK_ID_ONE_BASED,
@@ -43,7 +43,7 @@ def gamma_break_grid(start_index: int, end_index: int, jump_size: int = 1, save_
             feature_cols=DEFAULT_FEATURE_COLS,
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
-            oos_start_date=OOS_START_DATE,
+            oos_start_date=DEFAULT_OOS_START_DATE,
             sample_start_index=idx,
             poly_order=1,
             save_results=False,
@@ -100,7 +100,7 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
             feature_cols=DEFAULT_FEATURE_COLS,
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
-            oos_start_date=OOS_START_DATE,
+            oos_start_date=DEFAULT_OOS_START_DATE,
             sample_start_index=i,  # Structural break, required for Combo model
             poly_order=1,
             save_results=True,  # Must be True to get OOS MSE
@@ -139,7 +139,7 @@ def run_np_combo_cv_for_gamma_analysis(start_index, end_index,jump_size=100):
             feature_cols=DEFAULT_FEATURE_COLS,
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
-            oos_start_date=OOS_START_DATE,
+            oos_start_date=DEFAULT_OOS_START_DATE,
             sample_start_index=best_break_index,
             poly_order=1,
             save_results=True,

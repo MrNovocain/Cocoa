@@ -4,7 +4,7 @@ from cocoa.experiments.runner import ExperimentRunner
 from cocoa.models import NPRegimeModel, GaussianKernel, LocalPolynomialEngine, CocoaDataset
 from cocoa.models.assets import (
     PROCESSED_DATA_PATH,
-    OOS_START_DATE,
+    DEFAULT_OOS_START_DATE,
     DEFAULT_FEATURE_COLS,  # Using same features as RF/XGB for comparability
     DEFAULT_TARGET_COL,
     BREAK_ID_ONE_BASED,
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
-        oos_start_date=OOS_START_DATE,
+        oos_start_date=DEFAULT_OOS_START_DATE,
         kernel_name=kernel.__class__.__name__,
         poly_order=engine.order,
         sample_start_index=3594,

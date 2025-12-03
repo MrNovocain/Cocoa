@@ -1,6 +1,9 @@
-import pandas as pd
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
+import pandas as pd
+
 from .data_types import TrainTestSplit as BaseTrainTestSplit
 
 
@@ -12,7 +15,42 @@ class TrainTestSplit(BaseTrainTestSplit):
     # and adds the time period lengths.
 
 
-class CocoaDataset:
+class BaseDataset(ABC):
+    """Abstract dataset contract so experiment code can swap implementations."""
+
+    feature_cols: List[str]
+    target_col: str
+    df: pd.DataFrame
+    dates: pd.Series
+    X: pd.DataFrame
+    y: pd.Series
+
+    @abstractmethod
+    def trim_data_by_start_date(self, start_date: Optional[str | pd.Timestamp] = None) -> None:
+        ...
+
+    @abstractmethod
+    def get_window(
+        self,
+        start_date: str | pd.Timestamp,
+        end_date: str | pd.Timestamp,
+    ) -> Tuple[pd.DataFrame, pd.Series]:
+        ...
+
+    @abstractmethod
+    def get_date_from_1_based_index(self, index_1_based: int) -> pd.Timestamp:
+        ...
+
+    @abstractmethod
+    def get_1_based_index_from_date(self, date: str | pd.Timestamp) -> int:
+        ...
+
+    @abstractmethod
+    def split_oos_by_date(self, oos_start_date: str | pd.Timestamp) -> "TrainTestSplit":
+        ...
+
+
+class CocoaDataset(BaseDataset):
     """Convenience wrapper around the cocoa+Ghana weather panel.
 
     Responsibilities:
@@ -116,3 +154,8 @@ class CocoaDataset:
             T_train=len(X_train),
             T_test=len(X_test),
         )
+    
+
+    def get_last_date(self) -> pd.Timestamp:
+        """Returns the last date in the dataset."""
+        return self.dates.iloc[-1].strftime("%Y-%m-%d")

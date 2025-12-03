@@ -12,7 +12,7 @@ from pathlib import Path
 
 BREAK_ID_ONE_BASED = 6117 #3594 previous last break date 4903
 # BREAK_DATE = "2022-07-05"
-OOS_START_DATE = "2025-01-02"
+DEFAULT_OOS_START_DATE = "2025-01-02"
 # Use a repository-relative path so the code works cross-platform (Codespaces/Linux)
 # Resolve to the repository root from this file and point to `data/processed/...`.
 PROCESSED_DATA_PATH = str(

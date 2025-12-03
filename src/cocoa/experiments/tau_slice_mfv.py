@@ -12,7 +12,7 @@ from cocoa.models import CocoaDataset, NPRegimeModel, GaussianKernel, LocalPolyn
 from cocoa.models.assets import (
     BREAK_ID_ONE_BASED,
     PROCESSED_DATA_PATH,
-    OOS_START_DATE,
+    DEFAULT_OOS_START_DATE,
     DEFAULT_FEATURE_COLS,
     DEFAULT_TARGET_COL,
     Q_VALUE,
@@ -42,7 +42,7 @@ def run_mfv_gamma_slice(
     feature_cols: List[str] | None = None,
     target_col: str = DEFAULT_TARGET_COL,
     data_path: str = PROCESSED_DATA_PATH,
-    oos_start_date: str | pd.Timestamp = OOS_START_DATE,
+    oos_start_date: str | pd.Timestamp = DEFAULT_OOS_START_DATE,
     Q: int = Q_VALUE,
     poly_order: int = 1,
 ) -> TauSliceResult:

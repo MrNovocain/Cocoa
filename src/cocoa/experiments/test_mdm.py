@@ -14,7 +14,7 @@ from cocoa.experiments.runner import ExperimentRunner, ConvexComboExperimentRunn
 from cocoa.models import RFModel, NPRegimeModel, GaussianKernel, LocalPolynomialEngine
 from cocoa.models.assets import (
     PROCESSED_DATA_PATH,
-    OOS_START_DATE,
+    DEFAULT_OOS_START_DATE,
     DEFAULT_FEATURE_COLS,
     DEFAULT_TARGET_COL,
     BREAK_ID_ONE_BASED,
@@ -215,7 +215,7 @@ if __name__ == '__main__':
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
-        oos_start_date=OOS_START_DATE,
+        oos_start_date=DEFAULT_OOS_START_DATE,
         save_results=True,
         run_bvd=False,
         kernel_name=kernel.__class__.__name__,
@@ -229,7 +229,7 @@ if __name__ == '__main__':
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
-        oos_start_date=OOS_START_DATE,
+        oos_start_date=DEFAULT_OOS_START_DATE,
         save_results=True,
         run_bvd=False
     )
@@ -239,7 +239,7 @@ if __name__ == '__main__':
         feature_cols=DEFAULT_FEATURE_COLS,
         target_col=DEFAULT_TARGET_COL,
         data_path=PROCESSED_DATA_PATH,
-        oos_start_date=OOS_START_DATE,
+        oos_start_date=DEFAULT_OOS_START_DATE,
         sample_start_index= BREAK_ID_ONE_BASED,  # Structural break, required for Combo
         save_results=True,  # Must be True to get OOS MSE
     )
@@ -254,7 +254,7 @@ if __name__ == '__main__':
             feature_cols=DEFAULT_FEATURE_COLS,
             target_col=DEFAULT_TARGET_COL,
             data_path=PROCESSED_DATA_PATH,
-            oos_start_date=OOS_START_DATE,
+            oos_start_date=DEFAULT_OOS_START_DATE,
             sample_start_index= BREAK_ID_ONE_BASED,  # Structural break, required for Combo model
             poly_order=1,
             save_results=True,  # Must be True to get OOS MSE
