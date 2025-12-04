@@ -7,9 +7,11 @@ existing runners and Mohr detector without changing signatures.
 """
 
 from __future__ import annotations
+import matplotlib
+matplotlib.use('Agg')
+
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
 import pandas as pd
@@ -23,7 +25,6 @@ from cocoa.experiments.runner import ExperimentRunner, ConvexComboExperimentRunn
 from cocoa.models import CocoaDataset, RFModel, XGBModel
 from cocoa.experiments.break_detection import MohrRunner
 from cocoa.models.cocoa_data import BaseDataset
-from math import inf
 @dataclass
 class RollingResultRow:
     origin_idx: int
@@ -36,35 +37,9 @@ class RollingResultRow:
     msfe_RF: float
     pi: float
     hit: bool
-    trimmed_flag:bool=False
+    trimmed_window: Optional[Tuple[int, int]]
+    trimmed_flag: bool
 
-
-def build_descending_origins(start_idx: int, end_idx: int, step: int) -> List[int]:
-    """
-    Return descending origin indices (recent -> past), stepping by `step`.
-    Should include a final earliest-admissible origin when the remaining span < step.
-    Rolling backward matters: by starting from the most recent origin and moving
-    earlier, we avoid accidentally trimming away the true convergent break date
-    that might have been detected in a later (more recent) iteration.
-    """
-    if step <= 0:
-        raise ValueError("step must be positive.")
-    if start_idx < end_idx:
-        raise ValueError("start_idx should be >= end_idx for descending traversal.")
-
-    origins: List[int] = []
-    current = start_idx
-    while current >= end_idx:
-        origins.append(current)
-        next_val = current - step
-        if next_val < end_idx:
-            # include the earliest admissible origin once when the remaining span < step
-            if origins[-1] != end_idx:
-                origins.append(end_idx)
-            break
-        current = next_val
-
-    return origins
 
 
 class RollingWLLExperiment:
@@ -93,9 +68,9 @@ class RollingWLLExperiment:
         self.start_index = start_index
         self.end_index = end_index
         self.break_candidates: List[int] = []
+        self.break_pilot: Optional[int] = None
         self.trim_window: Optional[Tuple[int, int]] = None
         self.dataset = dataset
-        self.bestML = (None, inf)
         self.step = step
         self.last_date = self.dataset.get_last_date()
         self.records: List[RollingResultRow] = []
@@ -109,23 +84,26 @@ class RollingWLLExperiment:
         Run a single rolling trial at a given origin using the pilot break T_*.
         Mimics the notebook: WLL via NP combo, RF/XGB baselines, MSFE + PI.
         """
-        if not self.break_candidates:
+        trimmed_flag = False
+
+        if self.break_pilot is None:
             raise ValueError("Pilot Mohr break not set. Call run_pilot_mohr first.")
 
-
-        # If the pilot break would be trimmed by the right-tail window, signal stop.
-        if self.trim_window is not None:
-            trim_start, trim_end = self.trim_window
-            if self.is_candidate_trimmed(trim_start, trim_end, self.break_candidates):
-                raise RuntimeError("Pilot break would be trimmed; stop rolling loop.")
-
-        oos_start_date = self.dataset.dates.iloc[cur]
+        oos_start_date = self.dataset.dates.iloc[cur -1]
         cur_date = self.dataset.get_date_from_1_based_index(cur)
         if not self.last_date == cur_date:
             mohr_test = MohrRunner(cur_date.strftime("%Y-%m-%d"))
             break_index = mohr_test.run_mohr_break_detection()
+            self.trim_window = mohr_test.get_trimmed_indexies()
         else:
-            break_index = self.break_candidates[0]
+            break_index = self.break_pilot
+            # trim_window comes from the pilot Mohr
+
+        if self.trim_window is not None and break_index is not None:
+            trim_start, trim_end = self.trim_window
+            # trim bounds are 0-based; break_index is 1-based
+            trimmed_flag = trim_start <= (break_index - 1) <= trim_end
+
 
         # WLL (NP combo) using ConvexComboExperimentRunner
         wll_runner = ConvexComboExperimentRunner(
@@ -173,11 +151,7 @@ class RollingWLLExperiment:
         msfe_xgb = xgb_out.get("oos_mse")
 
         best_ml_msfe ,best_type = min(msfe_rf, msfe_xgb), "RF" if msfe_rf < msfe_xgb else "XGB"
-
-        if best_ml_msfe < self.bestML[1]:
-            self.bestML = (f"{best_type}with break index {break_index}", best_ml_msfe)
-        msfe_base = self.bestML[1]
-
+        msfe_base = best_ml_msfe
 
         pi = 1 - msfe_wll / msfe_base if msfe_base not in (None, 0) else None
         hit = bool(pi is not None and pi > 0)
@@ -186,15 +160,15 @@ class RollingWLLExperiment:
             origin_idx=cur,
             origin_date=oos_start_date,
             detected_break_idx=break_index,
-            detected_break_date=self.dataset.dates.iloc[break_index],
-            baseline=self.bestML[0],
+            detected_break_date=self.dataset.dates.iloc[break_index - 1],
+            baseline=best_type,
             msfe_wll=msfe_wll,
             msfe_XGb=msfe_xgb,
             msfe_RF=msfe_rf,
-            msfe_base=msfe_base,
             pi=pi if pi is not None else float("nan"),
             hit=hit,
-            trimmed_flag=self.trim_window is not None,
+            trimmed_window=self.trim_window,
+            trimmed_flag=trimmed_flag,
         )
 
 
@@ -222,12 +196,39 @@ class RollingWLLExperiment:
         self.break_candidates.append(break_index)
         trim_start, trim_end = mohr_runner.get_trimmed_indexies()
         self.trim_window = (trim_start, trim_end)
+        self.break_pilot = break_index
         return break_index
 
-    @staticmethod
-    def is_candidate_trimmed(trim_start: int, trim_end: int, candidates: List[int]) -> bool:
-        """Return True if any candidate lies within the trimming window [trim_start, trim_end]."""
-        return any(trim_start <= c <= trim_end for c in candidates)
+    def run(self):
+        """
+        Rolling break-aware WLL vs ML experiment in a loop.
+
+        Key behaviors to implement:
+        - Loop origins from recent -> past via a descending range.
+        - For each origin, run Mohr with a candidate grid that excludes prior breaks;
+        if exclusion empties the grid, halt to avoid trimming away the potential
+        convergent break point.
+        - Fit WLL via ConvexComboExperimentRunner (NP combo) with sample_start_index
+        set from the detected break (1-based).
+        - Fit RF/XGB baselines via ExperimentRunner; choose baseline per origin
+        (auto-best ML or fixed RF).
+        - Compute PI and hit flag; collect rows.
+        - Persist results and produce plots with shaded hit regions.
+        """
+        last_index = self.dataset.get_1_based_index_from_date(self.last_date)
+        if self.end_index == last_index:
+            raise ValueError("There is no testing sample to run, set end_index earlier than the last observation")
+        self.run_pilot_mohr()
+        if self.step % (self.end_index - self.start_index) == 0:
+            end_point_trial = False
+        else:
+            end_point_trial = True
+        for i in range(self.end_index, self.start_index, -self.step):
+            self.records.append(self.run_single_trial(i))
+        if end_point_trial == True:
+            self.records.append(self.run_single_trial(self.start_index))
+
+
 
 
 
@@ -253,34 +254,14 @@ class RollingWLLExperiment:
         raise NotImplementedError("plot_pi_distribution is a placeholder.")
 
 
-    def run_rolling_wll(self) -> pd.DataFrame:
-        """
-        Rolling break-aware WLL vs ML experiment (skeleton, not implemented).
-
-        Key behaviors to implement:
-        - Loop origins from recent -> past via build_descending_origins.
-        - For each origin, run Mohr with a candidate grid that excludes prior breaks;
-        if exclusion empties the grid, halt to avoid trimming away the potential
-        convergent break point.
-        - Fit WLL via ConvexComboExperimentRunner (NP combo) with sample_start_index
-        set from the detected break (1-based).
-        - Fit RF/XGB baselines via ExperimentRunner; choose baseline per origin
-        (auto-best ML or fixed RF).
-        - Compute PI and hit flag; collect rows.
-        - Persist results and produce plots with shaded hit regions.
-        """
-        raise NotImplementedError("run_rolling_wll is a placeholder.")
-
 
 if __name__ == "__main__":
     dataset = CocoaDataset()
-    index = dataset.get_1_based_index_from_date("2025-01-02")
-
-    exp = RollingWLLExperiment(index,index,1)
-    exp.run_pilot_mohr()
-    print(exp.break_candidates)
-    result = exp.run_single_trial(index)
-    print(result)
+    date = dataset.get_last_date()
+    index = dataset.get_1_based_index_from_date(date)
+    exp = RollingWLLExperiment(index-4,index-1,1)
+    exp.run()
+    print(len(exp.records))
 
 
 
