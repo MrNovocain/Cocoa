@@ -12,5 +12,7 @@ from .combo_base import BaseConvexCombinationModel
 from .np_regime import NPRegimeModel
 from .np_combo import NPConvexCombinationModel
 from .ml_combo import MLConvexCombinationModel
+from .generalized_combo import GeneralizedNonLinearComboModel
+from .mfv_CV import MFVGeneralizedComboValidator
 # from .np_wll import WLLModel
 from . import assets

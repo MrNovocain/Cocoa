@@ -1,0 +1,1207 @@
+Manuscript submitted to , pp. 1–29.
+A New Nonparametric Combination Forecasting with
+Structural Breaks
+Zongwu Caia, Gunawanb and Yuying Sunc
+aDepartment of Economics, University of Kansas, Lawrence, KS 66045, USA.
+E-mail: caiz@ku.edu
+bFaculty of Economics and Business, Universitas Gadjah Mada, Yogyakarta 55281, Indonesia.
+E-mail: gunawan.lee@ugm.ac.idcAcademy of Mathematics and Systems Science, Chinese Academy of Sciences, Beijing 100190, China.
+E-mail: sun-yuying@amss.ac.cn
+Summary This paper proposes a new nonparametric forecasting procedure based
+on a weighted local linear estimator for a nonparametric model with structural breaks.
+The proposed method assigns a weight based on both the distance of observations
+to the predictor covariates and their location in time and the weight is chosen us-
+ing multifold forward-validation to account for time series data. We investigate the
+asymptotic properties of the proposed estimator and show that the weight estimated
+by the multifold forward-validation is asymptotically optimal in the sense of achiev-
+ing the lowest possible out-of-sample prediction risk. Additionally, a nonparametric
+method is adopted to estimate the break date and the proposed approach allows for
+diﬀerent features of predictors before and after break. A Monte Carlo simulation study
+is conducted to provide evidence for the forecasting outperformance of the proposed
+method over the regular nonparametric post-break and full-sample estimators. Finally,
+an empirical application to inﬂation forecasting compares several popular parametric
+and nonparametric methods, including the proposed weighted local linear estimator.
+Keywords: Combination Forecasting, Model Averaging, Multifold forward-validation,
+Nonparametric Model, Structural Break Model, Weighted Local Linear Fitting.
+1. INTRODUCTION
+Forecasting time series data often assumes stationarity, and therefore the constancy of
+model parameters over time, such as mean, variance, frequency, trend, or combined. In
+practice, these parameters may change over time. For example, the US industrial produc-
+tion experienced slowdown during the ﬁnancial crisis between 2007 and 2008, as well as
+the Covid-19 pandemic between 2020 and 2023, while it experienced expansion in other
+time periods. Therefore, investigating structural instability has been a long-standing is-
+sue in time series. These two diﬀerent periods are regarded as a consequence of either
+parameter shifts or parameters varying smoothly over time. For the latter case, the reader
+is referred to the papers by Cai (2007), Sun et al. (2021), and references therein. The
+2 Cai et al.
+point at which the regime change occurs is called a change point or structural break in
+the statistics and econometrics literature, whereas the associated models are called to be
+models with structural break. In practice, breaks in the parameters of a forecasting model
+are caused by events, economic policies, or treatments that are essentially unknowable
+ex-ante and may be triggered by various factors, such as institutional, political, social,
+ﬁnancial, legal, or technological changes, which may precipitate these breaks. Such breaks
+are understood better retrospectively rather than at the time of their occurrence. Typi-
+cally, it is assumed that the modeler does not have knowledge of the process determining
+the break as addressed in Clements and Hendry (2011).
+Structural breaks pose statistical challenges for forecasting exercise. In a time series
+model with a structural break in the conditional mean and/or conditional variance, a
+conventional OLS estimator based on full-sample observations might be inconsistent. A
+consistent estimator can be computed using post-break observations only if the post-
+break sample is suﬃciently large. However, such forecasts may not be optimal or eﬃcient
+in terms of the mean squared forecast error (MSFE), as the relatively small post-break
+sample size may induce large estimation uncertainty, especially, for linear models, as
+addressed by Pesaran and Pick (2011), Pesaran et al. (2013), Rossi (2013), Boot and
+Pick (2020), Lee et al. (2022a,b), Parsaeian (2023), and references therein. Especially,
+Boot and Pick (2020) provided a test to determine whether modeling a structural break
+improves forecast accuracy. Therefore, pre-break observations may still be useful for
+forecast improvement depending on the magnitude of the break size. If there is no break,
+the usual full-sample estimator is optimal. If the break is strong, the post-break estimator
+may be optimal (eﬃcient). If the break is weak or moderate, a combined estimator
+of the full-sample estimator or the pre-break estimator and the post-break estimator
+would be optimal, where a combination weight between 0 and 1 is chosen in a way
+that optimizes the trade-oﬀ between the bias and variance eﬃciency of the full-sample
+estimator. Obviously, the break might cause the distributions of dependent variable and
+predictors to be diﬀerent before and after break. Unfortunately, in the aforementioned
+Nonparametric Combination Forecasting 3
+literature for linear models, it is implicitly assumed that the distribution of predictors is
+the same before and after break.
+The idea of combining information in producing the forecast could be considered as
+frequentist model averaging, since we average the pre-break and post break estimators as
+in Hjort and Claeskens (2003), Hansen (2007), Hansen (2008), Hansen and Racine (2012),
+Sun et al. (2021), Lee et al. (2022a,b), Sun et al. (2023), and references therein. In this
+spirit, there is a vast account of literature on diﬀerent forecast combination methods,
+particularly, in the parametric literature, see, to name just a few, Clements and Hendry
+(2006), Clements and Hendry (2011), Pesaran and Timmermann (2005), Pesaran and
+Timmermann (2007), Timmermann (2006), Pesaran et al. (2013), Boot and Pick (2020),
+Lee et al. (2022a,b), and references therein. However, to the best of our knowledge, the
+literature on nonparametric forecast combination methods capable of handling structural
+changes, especially structural breaks, remains relatively limited; see, for example, Sun
+et al. (2021) and Sun et al. (2023).
+This paper contributes to the nonparametric forecasting with structural breaks liter-
+ature by proposing a combined nonparametric method to exploit information contained
+in the dataset before break occurs. Our proposed estimator, inspired by the model av-
+eraging method, assigns a weight to observations before and after break. This weight
+is additional to the usual nonparametric weights that are given to observations based
+on how far they are located relative to the predictor covariates. Hence, it is termed as
+a weighted local linear estimator. Also, the asymptotic properties, including the asymp-
+totic bias and variance, of the proposed estimator are investigated and some discussions
+are provided to show that the asymptotic variance indeed can be smaller than that for
+the nonparametric estimator using only the post-break observations. Furthermore, we
+propose a novel multifold forward-validation model averaging (MFVMA) approach for
+selecting data-driven weights in time series forecasting, and the break date estimation
+employs the latest nonparametric method from Mohr and Selk (2020). This approach is
+related to cross-validation as discussed in the model averaging and nonparametric litera-
+ture such as Cai et al. (2000), Zhang and Liu (2023), Gao et al. (2016), Liao et al. (2019),
+4 Cai et al.
+Cheng and Hansen (2015), Lee et al. (2022a), and references therein. Unlike the standard
+cross-validation used in model averaging, our multifold forward-validation captures the
+temporal ordering of time series forecasting and utilizes only the data available up to the
+forecast time point. The idea behind multifold forward-validation is to divide the dataset
+into multiple groups, treating each group as a validation set for evaluating the model.
+Crucially, the validation set always precedes the training set temporally. The implemen-
+tation of multifold forward-validation is straightforward and ﬂexible, seldom relying on
+model structure assumptions, unlike criteria such as Mallows-type or other information
+criteria which require the derivation of related penalty terms as in Zhu et al. (2019), Liu
+and Okui (2013), Li et al. (2018), and references therein. Finally, we demonstrate that the
+selected weight is asymptotically optimal in the sense of minimizing the out-of-sample
+prediction risk, thereby complementing existing methods that primarily concentrate on
+minimizing the in-sample squared error loss under structural break scenarios. To establish
+the asymptotic optimality from the predictive perspective, we propose a novel strategy
+to bound the discrepancy between the nonparametric-based multifold forward-validation
+and the out-of-sample prediction risk function, instead of Whittle’s inequality as in Li
+(1987) and Hansen and Racine (2012).
+The remainder of the paper is organized as follows. In addition to the model setup,
+the weighted nonparametric regression predictor is proposed and its asymptotic prop-
+erties are studied in Section 2, together some practical issues such as the break date
+estimator, how to choose the tuning parameters, and a straightforward generalization of
+the proposed method to the multiple breaks case. More importantly, we show that the
+weight estimated by the multifold forward-validation is asymptotically optimal. Section
+3 presents a Monte Carlo simulation study and simulation results are presented in Online
+Appendix. Section 4 illustrates an empirical application. Finally, Section 5 concludes the
+paper. Note that the detailed theoretical justiﬁcations are relegated to Online Appendix.
+Nonparametric Combination Forecasting 5
+2. FORECASTING PROCEDURES
+2.1. Model Setup
+Let {(Yt, Xt) : t ∈ N} be a weakly dependent stochastic process in R×Rd. We consider
+following the forecasting model
+Yt+τ = mt(Xt) + ut+τ , 1 ≤ t ≤ T, (2.1)
+where τ ≥ 0 is the given (known) forecasting horizon (τ-step ahead forecast), and the
+idiosyncratic error ut+τ satisﬁes E[ut+τ |Ft] = 0 almost surely for the σ-ﬁeld Ft =
+σ(uj−1+τ , Xj : j ≤ t). It is assumed that there exists a change point at time T1 with
+1 ≤ T1 ≤ T, in the prediction function such that
+mt(x) = m(1)(x)1(t ≤ T1) + m(2)(x)1(t > T1) = m(1)(x) − λ(x)dt, (2.2)
+where m(1)(x) ∕≡ m(2)(x), λ(x) = m(1)(x) − m(2)(x), the break size function, T1 is the
+break point which might be unknown, dt = 1(t > T1) with 1(· ) being an indicator
+function, and both functions m(1)(x) and m(2)(x) are assumed to be continuous and
+satisfy some regularity conditions to ensure that {(Yt, Xt) : t ∈ N} is a (or piecewise)
+stationary α-mixing time series. Here, Xt is allowed to include some lags of Yt.1 If so, the
+distributions of Xt might be diﬀerent before and after break. Without loss of generality,
+it is assumed that Xt for 1 ≤ t ≤ T1 (before break) is stationary with its density fb(· )
+and Xt for T1 + 1 ≤ t ≤ T (after break) is also stationary with its density fa(· ). But,
+fb(· ) and fa(· ) might not be exactly same. Deﬁne δ(x) = fa(x)/fb(x), which is called
+the covariate shift. The reader is referred to the paper by Bickel et al. (2009) and the
+book by Sugiyama et al. (2012) for details on this topic. function in the machine learning
+literature for causal inferences, to capture diﬀerent features Xt before and after break
+since fb(· ) and fa(· ) are allowed to be diﬀerent. Throughout the paper, it is assumed
+that T1 = ⌊Ts0⌋ with 0 ≤ s0 ≤ 1, the portion of the pre-break observations, so that
+T2 = T − T1, the portion of the post-break observations. Clearly, for two extreme cases,
+1If Xt contains some lags of Yt, there is an issue regarding to the stationarity of Yt. For this aspect,
+the reader is referred to the papers by Cai and Masry (2000) and Cai et al. (2024) for details on the
+conditions imposed on mt(Xt) and the theoretical justiﬁcations.
+6 Cai et al.
+s0 = 0 means that there is no break and s0 = 1 implies that there is no observation in
+the post break period. Therefore, without loss of generality, it is assumed throughout the
+paper that 0 < s0 < 1. Finally, note that the expression in the right hand side of (2.2)
+would be regarded as a special case of a functional coeﬃcient time series model proposed
+in Cai et al. (2000) if dt would be known.
+Remark 2.1. In the literature for linear models, see, for example, Pesaran and Pick
+(2011), Pesaran et al. (2013), Rossi (2013), and Lee et al. (2022a,b), it is implicitly
+assumed that both density functions fb(x) and fa(x) are same, which is diﬀerent from
+our setting here. A structural change can be regarded as an event study and may be caused
+by an economic policy change, or an intervention (such as COVID-19), or a treatment
+(some programs), so that fb(x) and fa(x) are commonly assumed to be diﬀerent in the
+causal inference literature to capture diﬀerent features Xt. For more details on this aspect,
+the reader is referred to the paper by Cai et al. (2023) and references therein, although
+the main focus in the causal inference is somewhat diﬀerent from the setting here.
+It is clear that when mt(x) = β⊤
+t x in (2.1) with βt changing smoothly over time, the
+model in (2.1) becomes the models studied by Cai (2007) for estimation and forecasting
+and Sun et al. (2021) for a model averaging. Furthermore, when βt has structural change,
+the model in (2.2) was investigated by Pesaran et al. (2013) and Lee et al. (2022a,b) for
+the weighted generalized least squares (WGLS) estimators for a conventional structural
+change linear model to combine the information from both pre-break and post-break. As
+argued in Pesaran et al. (2013) and Lee et al. (2022a,b), the WGLS estimators proposed
+in Pesaran et al. (2013) and Lee et al. (2022a,b) have an ability to reduce MSFE under
+the structural breaks by using the full-sample observations instead of using only the
+post-break observations, by deriving the optimal weight for the pre-break proportion of
+the full-sample. Note that for simplicity, our focus is on (2.2) with only one break, and
+it is easy to generalize the model in (2.2) to the multiple breaks case, brieﬂy discussed
+in Section 2.5.2.
+Nonparametric Combination Forecasting 7
+2.2. Weighted Local Linear Estimation
+In this subsection, we propose an estimator for nonparametric model with structural
+break, where break may occur in the mean function and error variance. In particular, we
+are interested in estimating the mean function after break by partly using information
+contained in the pre-break observations. Our starting point is the following nonparametric
+local linear regression problem. For Xt in a neighborhood of x, a given grid point from
+the data domain, we can approximate locally the mean function by m(Xt) ≈ β0(x) +
+β1(x)⊤(Xt − x) by ignoring the higher order term, where β0(x) = m(x) and β1(x) =
+m′(x), the ﬁrst order derivative of m(x). Then, for the given data {(Yt, Xt)}T
+t=1, the
+locally weighted least squares is given by
+minβ0,β1
+Tτ󰁛
+t=1
+wt(γ, x)
+󰀃
+Yt+τ − β0 − β⊤
+1 (Xt − x)
+󰀄2
+, (2.3)
+where Tτ = T − τ and
+wt(γ, x) = γ1(t ≤ T1)Kh1 (x − Xt) + 1(t > T1)Kh2 (x − Xt) (2.4)
+for some 0 ≤ γ ≤ 1, and Kh(u) = K(u/h)/hd with K(· ) being a kernel function. To
+capture diﬀerent features of fb(· ) and fa(· ), two bandwidths h1 and h2 are used: h1
+is for m(1)(· ) and h2 is for m(2)(· ). If both m(1)(· ) and m(2)(· ) have the same degree of
+smoothness, then, h1 and h2 should be the same, denoted by h, so that wt(γ, x) = [γ1(t ≤
+T1) + 1(t > T1)]Kh(x−Xt). As mentioned in Cai et al. (2000), the estimation procedure
+and its asymptotic theory for the d-dimensional case are the same for the case that Xt
+is the univariate case. Therefore, for ease notation, in what follows, the presentation is
+only for one-dimensional case; that is d = 1, so that Xt and x become to be Xt and x,
+respectively.
+Equation (2.4) takes care of both break and smoothnesses of m(1)(· ) and m(2)(· ) so
+that the weighting scheme wt(γ, x) assigns a weight to the observations before break,
+and assigns a weight on each observation based on how close Xt is to the grid point x.
+Based on (2.4), post-break observations receive a weight of 1, while a weight of γ ∈ [0, 1]
+is assigned to pre-break observations. If γ = 0, the estimator is based on only the post-
+8 Cai et al.
+break observations, whereas γ is close to zero, then, the estimator is heavily weighted on
+the post-break observations with a small part of information before break. If γ = 1, then,
+a structural break is ignored and a full-sample is used to produce a full sample estimator.
+In other cases where γ ∈ (0, 1), a combination of pre- and post-break observations for
+the estimator is obtained.
+The minimizer of (2.3) is denoted by 󰁥β(x) = (󰁥β0(x), 󰁥β1(x))⊤, which gives 󰁥m(x) =
+󰁥β0(x), the estimator of m(x), and 󰁥m′(x) = 󰁥β1(x), the estimator of m′(x), respectively.
+To express the estimator in matrix form, we introduce the following notations. Let Y⊤
+∗ =
+(Y⊤
+(1), Y⊤
+(2)) be a Tτ ×1 vector of the dependent variable with Y(1) = (Y1+τ , . . . , YT1+τ )⊤
+and Y(2) = (YT1+τ+1, . . . , YT )⊤, and X⊤ = (X⊤
+(1), X⊤
+(2)) be a Tτ × 2 matrix
+X⊤
+(1) =
+󰀕
+1 . . . 1
+(X1 − x) . . . (XT1 − x)
+󰀖
+and X⊤
+(2) =
+󰀕
+1 . . . 1
+(XT1+1 − x) . . . (XTτ − x)
+󰀖
+.
+Now, deﬁne W(γ) as follows: W(γ) = WγWk, where Wγ = diag{γIT1 , IT −T1−τ } and
+Wk = diag{W(1), W(2)} with W(1) = diag(Kh1 (x−X1), . . . , Kh1 (x−XT1 )) and W(2) =
+diag(Kh2 (x −XT1+1), . . . , Kh2 (x −XTτ )) as well as Iℓ denoting an ℓ ×ℓ identity matrix.
+Thus, the minimizer of (2.3) is given by
+󰁥β(x) = (󰁥β0(x), 󰁥β1(x))⊤ = (X⊤W(γ)X)−1X⊤W(γ)Y∗. (2.5)
+In particular, the weighted local linear (WLL) estimator for the mean function is given
+by
+󰁥mwll(x) = 󰁥β0(x) = e⊤ 󰁥β(x), (2.6)
+where e⊤ = (1, 0), and it reduces to the local linear estimator of m(2)(x) based on the
+observations after break if γ = 0. Further, equation (2.5) can be rewritten as
+󰁥β(x) =
+󰀅
+X⊤W(γ)X
+󰀆−1󰀃
+γX⊤
+(1)W(1)Y(1) + X⊤
+(2)W(2)Y(2)
+󰀄
+= Γ󰁥β(1)(x) + (I2 − Γ)󰁥β(2)(x) = Θ󰁥βfull(x) + (I2 − Θ)󰁥β(2)(x), (2.7)
+where Γ = Γ(x, γ) = γ
+󰀅
+X⊤W(γ)X
+󰀆−1󰀃
+X⊤
+(1)W(1)X(1)
+󰀄
+, 󰁥β(1)(x) is the local linear estima-
+tor using the observations before break, which is
+󰀅
+X⊤
+(1)W(1)X(1)
+󰀆−1
+(X⊤
+(1)W(1)Y(1)), and
+󰁥β(2)(x) =
+󰀅
+X⊤
+(2)W(2)X(2)
+󰀆−1
+(X⊤
+(2)W(2)Y(2)) is the estimator using the observations after
+Nonparametric Combination Forecasting 9
+break. Further, 󰁥βfull(x) = 󰁥βfull(x) = (X⊤WkX)−1X⊤WkY∗ is the local linear estimator
+using the full sample and Θ = θ(x, γ) = γ
+󰀅
+X⊤W(γ)X
+󰀆−1󰀃
+X⊤W(1)X
+󰀄
+. Therefore, equa-
+tion (2.7) can be viewed as the combined estimator of the pre-break and the post-break
+estimators, i.e., a combination of 󰁥β(1)(x) and 󰁥β(2)(x) with the weight Γ. Alternatively, it
+can be regarded as the combined estimator from the full sample estimator and the post-
+break estimator, i.e., a combination of 󰁥βfull(x) and 󰁥β(2)(x) with the weight Θ. Clearly,
+󰁥β(x) in (2.7) involves two bandwidths h1 and h2 and weight γ.
+2.3. Asymptotic Properties
+Before embarking on deriving the asymptotic results, we now give some regularity con-
+ditions that are suﬃcient for the consistency and asymptotic normality of the proposed
+estimators, although they might not be the weakest ones possible. As pointed out by
+Cai et al. (2000), the conditions list below are standard and they are satisﬁed for many
+applications; see, for instance, the paper by Cai et al. (2000) for details. Then, we present
+the sketch proofs of the asymptotic properties in Online Appendix.
+2.3.1. Conditions
+Condition A: (A1) The second order derivatives of both mean functions m(1)(x) and
+m(2)(x) are continuously diﬀerentiable. (A2) Both functions fb(x) and fa(x) are contin-
+uous and positive within the support. (A3) The condition density of Yt+τ given Xt is
+bounded and satisﬁes the Lipschitz condition. (A4) The kernel function K(· ) is a sym-
+metric density function. (A5) The time series {(Yt, Xt) : t ∈ N} is α-mixing with the
+coeﬃcient α(k) satisfying 󰁓∞
+k=1 kc0 α1−2/δ0 (k) for some δ0 > 2 and c0 > 1 − 2/δ0. (A6)
+Assume that h1 → 0, h2 → 0, T1h1 → ∞, and T2 h2 → ∞. Also, limT →∞ h2/h1 = hc
+for some 0 < hc < ∞.
+Condition B: (B1) Assume that E
+󰀅
+Y 2
+t+τ + Y 2
+t+s+τ | Xt = x1, Xt+s = x2
+󰀆
+≤ M < ∞ for
+any t, s ≥ 1, x1 and x2. (B2) Assume that there exists a sequence of positive integers
+{sT } such that sT → ∞, sT = o((Th)1/2) and (T/sT )1/2α(sT ) → 0, as T → ∞. (B3)
+There exists δ∗ > δ0, where δ0 is given in Assumption A(5) such that α(k) = O(k−θ),
+10 Cai et al.
+where θ > δ0δ∗/[2(δ∗−δ0)]. (B4) Both h1 and h2 satisfy T1/2−δ0/4
+j hδ0/δ∗−1/2−δ0/4
+j = O(1)
+for j = 1 and 2.
+2.3.2. Asymptotic Theory
+Now, we investigate the asymptotic properties of 󰁥mwll(x). First, we evaluate Γ. To do
+so, consider X⊤
+(1)W(1)X(1). For j ≥ 0, let Sj(x) = 1
+T1
+󰁓T1
+t=1 Kh1 (Xt − x)
+󰀃
+(Xt − x)/h1
+󰀄j
+.
+It is easy to see that
+X⊤
+(1)W(1)X(1) = T1H1
+󰀕
+S0(x) S1(x)
+S1(x) S2(x)
+󰀖
+H1,
+where H1 = diag{1, h1}. Under Assumptions A1 - A5, it follows from (A.1) in Online
+Appendix that as T → ∞, Sj(x) p
+−→ µj fb(x), where µj =
+󰁕
+K(u)ujdu for j ≥ 0.
+Therefore, X⊤
+(1)W(1)X(1) = fb(x)T1H1 µ H1(1 + op(1)), where µ = diag{1, µ2}. Sim-
+ilarly, X⊤
+(2)W(2)X(2) = fa(x)T2H2 µ H2(1 + op(1)), where H2 = diag{1, h2}. Hence,
+X⊤W(γ)X = [γfb(x)T1H1µH1 + fa(x)T2H2 µ H2](1 + op(1)), which implies that Γ =
+diag{sb, sa}(1 + op(1)), where sb = sb(γ, s0, x) = γs0 [γ s0 + (1 − s0)δ(x)]−1 with δ(x)
+being the covariate shift function, and sa = sa(γ, s0, x, hc) = γs0 [γ s0 +(1−s0)δ(x)h2
+c]−1
+with hc = limT →∞(h2/h1).2 Clearly, sb depends on both γ and s0 as well as the covariate
+shift function δ(x). Note that if δ(x) = 1, both sb and sa do not depend on x. Finally, it
+is easy to see that 0 ≤ sb ≤ 1.
+Next, we evaluate the asymptotic bias for 󰁥mwll(x). For this purpose, (2.7) is re-
+expressed as 󰁥β(x) = 󰁥β(2)(x)+Γ
+󰀅󰁥β(1)(x)−󰁥β(2)(x)
+󰀆
+, so that 󰁥mwll(x) ≈ 󰁥β0,(2)(x)+sb[󰁥β0,(1)(x)−
+󰁥β0,(2)(x)], where 󰁥β0,(1)(x) and 󰁥β0,(2)(x) are the ﬁrst component of 󰁥β(1)(x) and 󰁥β(2)(x),
+respectively. Indeed, 󰁥β0,(1)(x) is the local linear estimator for m(1)(x) using only the
+pre-break observations and 󰁥β0,(2)(x) is the local linear estimator for m(2)(x) using only
+the post-break observations, denoted by 󰁥m(2)(x). Also, we show in Online Appendix
+that the asymptotic biases for 󰁥β0,(1)(x) and 󰁥β0,(2)(x) are B1(x) = h2
+1m′′
+(1)(x)µ2/2 and
+2According to the asymptotic theory for the kernel estimation for nonparametric regression models, see,
+for example, Fan and Gijbels (1996) and Fan and Yao (2003), the optimal bandwidth for h1 is h1,opt =
+Op(T−1/(4+d)
+1 ) and the one for h2 is h2,opt = Op(T−1/(4+d)
+2 ). Therefore, hc exists and 0 < hc < ∞.
+Nonparametric Combination Forecasting 11
+B2(x) = h2
+2m′′
+(2)(x)µ2/2, respectively. Therefore, the asymptotic bias for 󰁥mwll(x) is
+Bwll(x) = sbλ(x) + sbB1(x) + (1 − sb)B2(x), (2.8)
+where λ(x) is deﬁned in (2.2). Clearly, the ﬁrst term in the right hand side of Bwll(x) is
+extra by comparing with that for 󰁥β0,(2)(x) due to the weighted estimation procedure and
+it is negative if λ(x) < 0 by ignoring the higher order term. Finally, one can see that for
+a linear model (mt(Xt) = β⊤
+t Xt), Bwll(x) reduces to sbλ(x), which is similar to those in
+Pesaran et al. (2013) and Lee et al. (2022a), so that the results in Pesaran et al. (2013)
+and Lee et al. (2022a) can be regarded as a special case of (2.8).
+Finally, in addition to the asymptotic bias given in (2.8), we consider the asymptotic
+variance of 󰁥mwll(x). To this end, we express
+X⊤W(γ)U = γ
+T1󰁛
+t=1
+Kh1 (Xt − x)
+󰀕
+1
+Xt − x
+󰀖
+ut+τ +
+Tτ󰁛
+t=T1+1
+Kh2 (Xt − x)
+󰀕
+1
+Xt − x
+󰀖
+ut+τ
+=
+󰀕
+A1
+A2
+󰀖
+,
+where U = (u1+τ , . . . , uT )⊤, which is the main term that contributes to the asymptotic
+variance of 󰁥mwll(x), and A1 and A2 are deﬁned in a clear manner. Clearly,
+C0(γ) =
+󰁵
+h2
+T A1 =
+󰁵
+h2
+T
+󰀅
+γ
+T1󰁛
+t=1
+Kh1 (Xt − x)ut+τ +
+Tτ󰁛
+t=T1+1
+Kh2 (Xt − x)ut+τ
+󰀆
+≈ γ
+󰁳
+hc s0 C1 +
+√
+1 − s0 C2,
+where
+C1 =
+󰁵
+h1
+T1
+T1󰁛
+t=1
+Kh1 (Xt − x)ut+τ and C2 =
+󰁵
+h2
+T2
+Tτ󰁛
+t=T1+1
+Kh2 (Xt − x)ut+τ
+One can show in Online Appendix that under Assumptions B1 - B4,
+C1
+d
+→ N
+󰀃
+0, σ2
+m,1(x)
+󰀄
+and C2
+d
+→ N
+󰀃
+0, σ2
+m,2(x)
+󰀄
+,
+where d
+→ denotes the convergence in distribution, σ2
+m,1(x) = ν0σ2
+1(x)fb(x) and σ2
+m,2(x) =
+ν0σ2
+2(x)fa(x) with νj =
+󰁕
+u2jK2(u)du (j ≥ 0), σ2
+1(x) = E
+󰀃
+u2
+t+τ | Xt = x
+󰀄
+for t ≤ T1 and
+σ2
+2(x) = E
+󰀃
+u2
+t+τ | Xt = x
+󰀄
+for t ≥ T1, if the conditional variance of ut+τ given Xt = x
+has the same break date as the mean function. Also, it is not diﬃcult to show that
+12 Cai et al.
+Cov(C1, C2) → 0 as T → ∞. Therefore, it follows from the Cram´er-Wold device that
+(C1, C2)⊤ d
+−→ N
+󰀃
+0, Σc(x)
+󰀄
+(2.9)
+with Σc(x) = diag{σ2
+m,1(x), σ2
+m,2(x)}, which implies that C0(γ) d
+−→ N
+󰀃
+0, σ2
+m,0(x)
+󰀄
+,
+where σ2
+m,0(x) = ν0
+󰀅
+s0γ2h2
+cσ2
+1(x)fb(x) + (1 −s0)σ2
+2(x)fa(x)
+󰀆
+. Hence, we have the follow-
+ing the asymptotic normality for 󰁥mwll(x) with its detailed discussions given in Online
+Appendix.
+Theorem 2.1. Suppose that Conditions A - B hold. Then, as T → ∞,
+󰁳
+Th2
+󰀅
+󰁥mwll(x) − m(2)(x) − Bwll(x) + op(h2
+1 + h2
+2)
+󰀆 d
+−→ N
+󰀃
+0, σ2
+wll(x)
+󰀄
+, (2.10)
+where σ2
+wll(x) = σ2
+m,0(x)[γ s0fb(x)+(1−s0)fa(x)]−2, which is regarded as the asymptotic
+variance of 󰁥mwll(x).
+If there is no break in the variance function; that is, σ2(x) = E
+󰀃
+u2
+t+τ | Xt = x
+󰀄
+=
+σ2
+1(x) = σ2
+2(x), then, it is reduced to σ2
+wll(x) = ν0 swllσ2(x)/fa(x), where swll = [γ2s0h2
+c/δ(x)+
+(1−s0)]/[γ s0/δ(x)+(1−s0)]2. By the same token, it is not diﬃcult to derive the asymp-
+totic variance of 󰁥m(2)(x), which is σ2
+(2)(x) = ν0s(2)σ2(x)/fa(x), where s(2) = 1/[1 − s0].
+Evidently, swll < s(2) so that the asymptotic variance for 󰁥mwll(x) is smaller than that for
+󰁥m(2)(x) in the asymptotic sense. Note that when γ is consistently estimated, denoted by
+ˆγ, we still have
+C0(ˆγ) = C0(γ) + (ˆγ − γ)√s0 C1 = C0(γ) + op(1) d
+−→ N
+󰀃
+0, σ2
+m,0(x)
+󰀄
+by Slutsky theorem and (2.9) and (2.10), where σ2
+m,0(x) is deﬁned in (2.9), which indicates
+that the asymptotic normality for 󰁥mwll(x) is the same for both known γ and the consistent
+estimate ˆγ, as long as γ can be consistently estimated (see Section 2.4).
+Finally, it is clear from (2.8) and (2.10) that the mean squared error (MSE) of 󰁥mwll(x)
+is given by
+MSE
+󰀃
+󰁥mwll(x)
+󰀄
+= B2
+wll(x) + σ2
+wll(x)/(Th2), (2.11)
+where the asymptotic bias term Bwll(x) is given in (2.8) and the asymptotic variance
+term σ2
+wll(x) can be found in (2.10), which provides a criterion for choosing the opti-
+Nonparametric Combination Forecasting 13
+mal bandwidths and γ simultaneously, described as follows. Therefore, (2.11) provides a
+formulation to balance the bias-variance trade-oﬀ.
+2.3.3. Bandwidth Selection
+Various existing bandwidth selection techniques for nonparametric regression can be
+adapted for the above estimation; see, e.g., Fan and Gijbels (1996) and Fan and Yao
+(2003). But, as pointed out by Shao (1993) and Cai et al. (2000), the conventional leave-
+one-out cross-validation method might fail for time series data, since adjacent points
+might be highly dependent. Therefore, we adapt a simple and quick method proposed
+by Cai et al. (2000) to select bandwidth h1 and h2, described below. It can be regarded
+as a modiﬁed multifold forward-validation criterion that is attentive to the structure of
+stationary time series data.
+To choose the optimal bandwidths {hi}i=1,2 from the data, we describe the procedure
+in detail. For simplicity, our focus here is on choosing ˆh1 in a data-driven fashion. To
+this end, let m and Q be two given positive integers such that T1 > mQ. The idea is ﬁrst
+to use Q sub-series of lengths T1 − qm (q = 1, . . . , Q) to estimate the unknown mean
+functions and then compute the one-step forecasting errors of the next section of the
+time series of length m based on the estimated models. More precisely, we choose the
+optimal bandwidth that minimize the following AMS error
+AMS(h1) = 1
+Qm
+Q󰁛
+q=1
+T1−τ−qm+m󰁛
+t=T1−τ−qm+1
+󰀅
+Yt+τ − 󰁥m[−q](Xt)
+󰀆2
+, (2.12)
+where { 󰁥m[−q](· )} is the local linear mean estimate from the sample {(Yt+τ , Xt), 1 ≤ t ≤
+T1 − τ − qm} with i = 1 here. Ten candidate values for each bandwidth are chosen to
+be equidistant within the range [10−2, 10] · ˜h1 to ﬁnd the optimal h1, denoted by ˆh1,
+where ˜h1 represents an initial bandwidth for the ﬁrst subsample under Gaussian kernel.
+Note that the theoretically optimal bandwidth h1,opt ∝ T−1/(4+d)
+1 , where d represents the
+dimension of covariates. By the same token, we can choose ˆh2 using a similar procedure.
+14 Cai et al.
+2.4. Consistency of the Multifold Forward-Validation
+Now, we choose the optimal weight γ for the pre-break data. Similar to (2.12), it is
+to minimize the following empirical MSE based on (2.11) over the post-break period, for
+given ˆh1 and ˆh2 from the above. To choose the optimal γ in 󰁥mwll(Xt), we propose a novel
+multifold forward-validation criterion as follows:
+MFV(γ) = 1
+Qm
+Q󰁛
+q=1
+Tτ −qm+m󰁛
+t=Tτ −qm+1
+󰀅
+Yt+τ − 󰁨m[−q](Xt)
+󰀆2
+= 1
+Qm|| 󰁨Y − 󰁨mwll(γ)||2, (2.13)
+where 󰁨Y = (YT −Qm+1, . . . , YT )⊤, 󰁨mwll(γ) =
+󰀃
+󰁨m[−Q]󰀃
+XTτ −Qm+1
+󰀄
+, . . . , 󰁨m[−1](XTτ )
+󰀄⊤
+,
+and || · || is the Euclidean norm. We use the multifold forward-validation criterion to
+select the weight γ as follows:
+󰁥γ = arg minγ∈H
+MFV(γ),
+where H = [0, 1]. Then, the τ-step-ahead MFVMA prediction of YT +τ is
+󰁥YT +τ (󰁥γ) ≡ 󰁥mwll(XT ) = e⊤󰁥Γ󰁥β(1)(XT ) + e⊤(I2 − 󰁥Γ)󰁥β(2)(XT ),
+where 󰁥Γ = 󰁥γ
+󰀅
+X⊤W(󰁥γ)X
+󰀆−1󰀃
+X⊤
+(1)W(1)X(1)
+󰀄
+.
+To evaluate the performance of the MFVMA method, we consider the following quadratic
+prediction risk function
+RT +τ (γ) = E
+󰁱
+YT +τ − 󰁥YT +τ (γ)
+󰁲2
+− σ2
+T +τ ,
+where σ2
+t+τ =Var(ut+τ ) denotes the variance of ut+τ . Intuitively, one would aim to select
+the model weight γ to minimize the out-of-sample prediction risk function RT +τ (γ)
+subject to the constraint 0 ≤ γ ≤ 1. However, this is infeasible due to the expectation
+depending on the unknown conditional probability density function. Instead of directly
+minimizing the infeasible risk RT +τ (γ), we select data-driven weights by minimizing the
+multi-fold forward-validation criterion. We will demonstrate the asymptotic optimality
+in the sense that the out-of-sample prediction achieves the lowest possible prediction risk
+as the sample size approaches inﬁnity. For this purpose, deﬁne R∗
+T +τ (γ) = E[YT +τ −
+Y ∗
+T +τ (γ)]2 − σ2
+T +τ , and ξ∗
+T +τ = infγ∈H R∗
+T +τ (γ), where Y ∗
+T +τ (γ) = m∗
+wll(XT ), m∗
+wll(x) =
+Nonparametric Combination Forecasting 15
+sbβ∗
+0,(1)(x) + (1 − sb)β∗
+0,(2)(x), where β∗
+0,(1)(x) and β∗
+0,(2)(x) are well-deﬁned limits of
+󰁥β0,(1)(x) and 󰁥β0,(2)(x) for any given x. We state the requisite conditions for asymptotic
+optimality, wherein all limiting behaviors are considered as the sample size T tends to
+inﬁnity.
+Condition C: (C1) Assume that ξ∗−1
+T +τ supγ∈H{[YT +τ − 󰁥YT +τ (γ)]2 −[YT +τ −Y ∗
+T +τ (γ)]2}
+is uniformly integrable. (C2) For any given x, Qm = O(Th2), T−1/2h−1/2
+1 ξ∗−1
+T +τ = o(1),
+T−1/2h−1/2
+2 ξ∗−1
+T +τ = o(1), h2
+1ξ∗−1
+T +τ = o(1), and h2
+2ξ∗−1
+T +τ = o(1). (C3) The fourth moment
+of Yt+τ exists and so, do Xt and ut+τ .
+Condition C is a mild technical condition that is commonly employed in the model
+averaging literature. Speciﬁcally, Condition C1 aligns with Condition 7 in Hu and Zhang
+(2023). Condition C2 elucidates the relationships among ξ∗
+T +τ , h1, h2, and T. Analogous
+conditions in the literature include Condition 7 of Ando and Li (2014), Condition C.6
+of Zhang et al. (2016), and Condition C.6 of Sun et al. (2023). Condition C3 represents
+the regularity conditions of the central limit theorem for dependent processes, which is
+similar to Assumption 4 in Zhang and Liu (2023). Now, we state the following theo-
+rem to establish the asymptotic optimality for 󰁥γ with its detailed proof given in Online
+Appendix.
+Theorem 2.2. Suppose that Conditions A - C hold. Then, as T → ∞,
+RT +τ (󰁥γ)
+infγ∈H RT +τ (γ) −→ 1
+in probability for given τ ≥ 0.
+Finally, note that Theorem 2.2 demonstrates that the proposed combination prediction
+attains asymptotic optimality in the sense of realizing the minimum attainable out-of-
+sample prediction risk. However, in contrast to most existing works for model averaging
+that establish asymptotic optimality based on an in-sample squared error loss function,
+such as Hansen (2007), Wan et al. (2010), Lee et al. (2022a), and Racine et al. (2023),
+the proposed procedure is constructed by utilizing multifold historical data sets, and the
+asymptotic optimality is established based on the out-of-sample prediction risk function,
+16 Cai et al.
+rendering it more applicable to model averaging for predictive purposes. It is noteworthy
+that our result of asymptotic optimality holds irrespective of whether the correct models
+are included in the candidate models with known break dates and bandwidths.
+2.5. Practical Implementations
+2.5.1. Estimation of Break Date
+When the break date T1 is unknown, it can be estimated using the method proposed
+by Mohr and Selk (2020). The objective is to estimate the rescaled change point s0. The
+estimator itself is based on a Kolmogorov-Smirnov functional of the marked empirical
+process of residuals; that is
+ˆTT (s, z) = 1
+T
+⌊T s⌋󰁛
+t=1
+󰀃
+Yt+τ − ˆmT (Xt)
+󰀄
+ωT (Xt)1(Xt ≤ z)
+for s ∈ [0, 1], where x ≤ y is short for xj ≤ yj for all j = 1, . . . , d, ωT (•) = 1{• ∈
+[−(logT) 1
+d+1 , (logT) 1
+d+1 ]d} and for simplicity, ˆmT (· ) is the Nadaraya-Watson estimator3,
+namely
+ˆmT (x) =
+󰁓Tτ
+t=1 Kh(x − Xt)Yt
+󰁓Tτ
+t=1 Kh(x − Xt)
+.
+The truncation of the domain of Xt to a compact set within R by the function ωT (•)
+is motivated by the fact that kernel estimators only perform well in regions where there
+are many observations and rather poorly on the edges and outside of the sample space.
+Therefore, the nice asymptotic properties cannot be expected on the whole domain of
+Rd. Then, s0 is estimated by
+ˆsT := min
+󰀫
+s : sup
+z∈R
+| ˆTT (s, z)| = sup
+¯s∈[0,1]
+sup
+z∈R
+| ˆTT (¯s, z)|
+󰀬
+. (2.14)
+Under some regularity conditions; see, for instance, Assumptions I - TX.2 in Mohr and
+Selk (2020), it follows from Mohr and Selk (2020) that ˆsT is a consistent estimate of
+s0 with the convergence rate T. The reader is referred to the paper by Mohr and Selk
+(2020) for details. Therefore, ˆsT in (2.14) is used in our simulation and empirical studies
+conducted in Sections 3 and 4, respectively.
+3Of course, one can use the local linear ﬁtting scheme.
+Nonparametric Combination Forecasting 17
+2.5.2. Extension to Multiple Breaks
+The main focus in the previous subsections is on the case of having a single break.
+However, in practice a time series model may be subject to multiple breaks. The case of
+multiple breaks is a straightforward extension of the previous sections. The weighted local
+linear estimator can be similarly deﬁned as the combination of the full-sample estimator
+and the estimator using observations after the most recent break point, described below.
+For example, consider a nonparametric model in (2.1) with two breaks (three periods)
+so that (2.2) can be generalized to the following
+mt(x) = m(1)(x)1(t ≤ S1) + m(2)(x)1(S1 < t ≤ S2) + m(3)(x)1(t > S2),
+where two break points are at S1 and S2 with 1 < S1 < S2 < T. Similar to the estimation
+procedure as in (2.7), for simplicity, by following the same idea in (2.7) (see the last
+equation in (2.7)), we adopt the following combined local linear estimator
+󰁥mwll,2(x) = θ2 󰁥mfull(x) + (1 − θ2) 󰁥m(3)(x), (2.15)
+where 0 ≤ θ2 ≤ 1 is the weight, similar to Θ in (2.7), 󰁥mfull(x) is the local linear estimator
+based on the full sample, and 󰁥m(3)(x) is the local linear estimator based on the obser-
+vations from the last period (S2 < t ≤ T). Similar to the asymptotic analyses presented
+in Section 2.3, it is not diﬃcult to obtain the asymptotic properties for 󰁥mwll,2(x). By
+the same token, one can get a consistent estimate of θ2 by following the similar proce-
+dure outlined in (2.13) in Section 2.4. Finally, note that the theoretical derivations for
+󰁥mwll,2(x) similar to those for 󰁥mwll(x) for single break case, so omitted and available upon
+request.
+For a model with two breaks, other combined estimators are possible, for example, the
+combination of the full-sample estimator and the two subsample estimators based on the
+second and third periods. However, this subsample estimator is not consistent for m(3)(x).
+Also, because the full-sample estimator is the most eﬃcient one, the eﬃciency of the
+combined estimator cannot be enhanced by combining with this inconsistent subsample
+estimator using the second and third subsamples. Therefore, this combined estimator does
+18 Cai et al.
+not balance the trade-oﬀ between the bias and variance eﬃciency. For more discussions,
+the reader is referred to the paper by Lee et al. (2022b) for linear models. Following the
+same idea as in (2.15), it is not diﬃcult to extend to a nonparametric model with three
+or more than three breaks.
+3. MONTE CARLO SIMULATION STUDIES
+In order to evaluate the ﬁnite sample performance of our proposed estimator, we
+consider three data generating processes; that is
+(IID) Yt+1 = mt(Xt) + σtεt, where εt ∼ N (0, 1) i.i.d.
+(TS) Yt+1 = mt(Xt) + σtεt, where εt ∼ N (0, 1) i.i.d.
+(AR) Yt+1 = mt(Yt) + σtεt, where εt ∼ N (0, 1) i.i.d.
+In this study, we simulate distinct distributions for Xt before and after the structural
+break. For the IID case, we generate samples Xt ∼ N (0,
+√
+0.1) for the pre-break period
+1 ≤ t ≤ T1, and Xt ∼ N (1,
+√
+0.5) for the post-break period T1 + 1 ≤ t ≤ T. For the TS
+case, we generate samples from the following distributions for Xt: Xt = 0.4Xt−1 + υ1,t
+for 1 ≤ t ≤ T1 and Xt = 0.5Xt−1 + υ2,t for T1 + 1 ≤ t ≤ T, where υ1,t ∼ N (0,
+√
+0.1)
+and υ2,t ∼ N (1,
+√
+0.5) iid. Further, we introduce a break in variance and a shift in
+distribution of the error term such that σtεt =
+√
+0.1ε1,t · 1(t ≤ T1) +
+√
+0.2ε2,t · 1(t > T1),
+where both ε1,t ∼ N (0,
+√
+0.1) and ε2,t ∼ N (1,
+√
+0.5) are independently and identically
+distributed. The mean function is modeled as follows
+mt(x) = sin(x)1(t ≤ T1) +
+󰀃
+1 − b
+󰀄
+sin(x)1(t > T1),
+where b takes four values as 0.1, 0.3, 0.6, and 1, so that the break size function λ(x) =
+b sin(x) is characterized by b. The pre-break sample size is deﬁned as a proportion of the
+full-sample, T1 = Ts0T with s0 ∈ {0.2, 0.5, 0.8}, with sample sizes of T ∈ {500, 1000}.
+The simulation is repeated M = 1000 times.
+We shall evaluate whether the size of the break in both the mean and variance inﬂuences
+the forecasting performance of our proposed estimator. We distinguish the cases when
+Nonparametric Combination Forecasting 19
+s0 is known, or unknown and estimated by ˆsT using (2.14). We use the Gaussian kernel
+for estimating the mean function 󰁥m(· ), together with the bandwidth {hi}i=1,2 and the
+weight γ determined by multifold forward-validation as described in Sections 2.3.3 and
+2.4, respectively. Note that for simplicity, we adopt m = [0.1Ti] and Q = 4 for {ˆhi}i=1,2
+as recommended in Cai et al. (2000).
+In order to evaluate forecasting performance, we employ the mean squared forecast-
+ing error of one-step-ahead forecast by comparing our weighted local linear estimator
+(“WLL” or “wll”) to post-break estimator (“PB” or “pb”) as well as full sample estima-
+tor (“FS” or ”fs”). One-step ahead forecast for Yt computed at time T using method i is
+denoted as 󰁥Yi,T +1, and i = WLL, PB, or FS. In this simulation exercise, these forecasts
+are conditional on XT +1, or precisely
+󰁥Ywll,T +1 = 󰁥mwll,c(XT ),
+where 󰁥mwll,c(· ) is computed using (2.9), while 󰁥Ypb,T +1 is based on local linear estimator
+using post-break observations only, and 󰁥Yfs,T +1 uses the entire sample. In the case of
+a known s0, we use the date T1 as the break date. In the case of an estimated s0, we
+use the estimated break date ˆT1 = ⌊T ˆsT ⌋ to determine the post-break sample for both
+the post-break and weighted local linear estimators. Further, We use a ﬁxed estimation
+window from t = 1, . . . , T. The MSFE for each method is calculated as
+MSFEi = 1
+1000
+1000󰁛
+m=1
+󰀃
+Y (m)
+i,T +1 − 󰁥Y (m)
+i,T +1
+󰀄2
+,
+where 󰁥Y (m)
+i,T +1 is the forecasted value for YT +1 computed using method i for the m-th
+replication.
+Tables 1 - 3 in Online Appendix display simulation results for MSFE1/MSFE2 and
+MSFE3/MSFE2 for the IID (in Table 1), TS (in Table 2) and AR (in Table 3) data
+generating process scenarios, respectively. Across all scenarios, we observe that our pro-
+posed WLL estimator consistently outperforms the conventional post-break estimator,
+as evidenced by relative MSFEs less than 1. This demonstrates that the WLL estima-
+tor successfully improves the forecast by taking into account the pre-break observations
+20 Cai et al.
+using an optimal weight, rather than relying solely on post-break observations for the
+forecast. On the other hand, we also observe that the FS estimator yields relative MSFE
+that is far greater than 1, which means that ignoring structural breaks, using full sample
+observations for forecast may be unstable and lead to severe bias.
+4. AN EMPIRICAL EXAMPLE
+The relationship between inﬂation and unemployment has long been an important
+topic in macroeconomic policy discussions. Phillips (1958) was the ﬁrst to formulate the
+well-known Phillips curve, which postulated a stable, inverse relationship between the
+two variables. Although it served as an important tool for macroeconomic analysis during
+the 1960s, this relationship broke down in the 1970s, when both high inﬂation and high
+unemployment were observed, as addressed in Friedman (1968), or Phelps (1968).
+Subsequently, revised versions of the Phillips curve were introduced, such as the expec-
+tations augmented and New Keynesian Phillips curves. See, for example, Mankiw (2001)
+and Zhu (2005). The trade-oﬀ between inﬂation and unemployment is generally believed
+to hold in the short run, while in the long run the curve is vertical, and unemployment
+converges to its natural rate.
+The aim of this empirical section is to present an example of forecasting a simpliﬁed
+Phillips curve that incorporates a single structural break as a form of nonlinearity, that
+is formulated as
+inﬂt+1 = m1(unempt)1(t ≤ T1) + m2(unempt)1(t > T1) + εt, (4.16)
+where inﬂt denotes the year-on-year inﬂation rate, unempt represents the unemployment
+rate, T1 is the break point, and εt is the idiosyncratic error term.
+The data used in this analysis were obtained from the Federal Reserve Economic
+Data (FRED) database. Two variables are used in this analysis: the year-on-year (YoY)
+inﬂation rate and the detrended unemployment rate. The YoY inﬂation rate is calculated
+as log(CPIt/CPIt−12), where CPI denotes the Consumer Price Index. Both the inﬂation
+and detrended unemployment data were tested for stationarity using the augmented
+Nonparametric Combination Forecasting 21
+Dickey-Fuller test, and both were found to be stationary. The sample period spans from
+January 1948 to May 2025, comprising a total of 929 monthly data points after excluding
+non-trading days and computing the YoY inﬂation.
+We iteratively calculate forecasts using the local linear postbreak estimator with mul-
+tifold forward-validation as a benchmark, along nine other alternative methods, which
+are depicted in Table 1. The dataset is split into two segments: the initial T observations
+Table 1: Forecasting methods used in the empirical analysis
+No. Method Description
+1. PBOLS OLS postbreak estimator
+2. WLL Bias-corrected weighted local linear estimator
+3. PBLL Local linear postbreak estimator
+4. FSLL Local linear full sample estimator
+5. FSOLS OLS full sample estimator
+6. WGLS Weighted general least squares Lee et al. (2022a)
+7. PPP Linear regression using estimated optimal weights Pesaran et al.
+(2013)
+8. optW (b = 0, ¯b =
+1)
+Linear regression using robust optimal weights Pesaran et al. (2013)
+9. optWd Linear regression using optimal window Pesaran and Timmermann
+(2007)
+10. aveW Forecast averaging across estimation windows Pesaran and Pick
+(2011)
+constitute the in-sample estimation period, and the remaining observations serve as the
+pseudo out-of-sample evaluation period. Forecasts are generated step by step during the
+out-of-sample period, using only the information available at each forecast point. As we
+widen the estimation window, we re-estimate all model parameters, such as the break
+points and the optimal weight in the case of our WLL estimator. Subsequently, we eval-
+uate the forecasts for horizons τ = 1, 2, 3, 4, and 5 days using the Diebold-Mariano
+(DM) test proposed by Diebold and Mariano (1995). The out-of-sample analysis covers
+the period between January 2010 and May 2025.
+The DM test is considerably more versatile than any alternative test of equality of
+forecast performance, and is likely to be widely used in empirical evaluation studies.
+However, the test was found to be quite seriously over-sized for moderate numbers of
+sample observations. In addition, the long-run variance can frequently be negative when
+computing standard DM tests as argued by Harvey et al. (1997) and Harvey et al. (2017).
+22 Cai et al.
+Therefore, we use a modiﬁed version of the DM test in the following. Let ei,t = Yt − 󰁥Yi,t
+and ej,t = Yt − 󰁥Yj,t be the forecast errors for method i and j, respectively, and choose
+the loss diﬀerential dt = e2
+i,t − e2
+j,t. Denote ¯d = T−1 󰁓T
+t=1 dt as the the sample mean
+of the loss diﬀerential, or simply MSFEi − MSFEj, and ω2 the long-run variance of dt,
+i.e., ω2 = 󰁓∞
+j=−∞ Υj, with Υj = Cov
+󰀃
+dt, dt−j
+󰀄
+. Then, the modiﬁed Diebold-Mariano
+(MDM) test is deﬁned as follows
+MDM =
+󰀫󰁳
+T + 1 − 2h + T−1h(h − 1)
+󰀃 ¯d
+ˆω
+󰀄
+if ˆω > 0√
+T
+󰀃 ¯d
+ˆωBart
+󰀄
+otherwise ,
+where ˆω2 = ˆγ0 + 2 󰁓τ−1
+j=1 ˆΥj and ˆΥj = T−1 󰁓T
+t=j+1
+󰀃
+dt − ¯d
+󰀄󰀃
+dt−j − ¯d
+󰀄
+is the associated
+sample autocovariance. The critical values are computed from Student’s distribution
+tT −1. The formula for ˆω2 makes use of a long-run variance estimator, which is a weighted
+sum of τ − 1 lags of sample auto-covariances. This approach is motivated by the fact
+that optimal τ-step-ahead forecast errors are at most (τ −1)-dependent. The magnitude,
+however, can take a negative value. In such cases, we opt for a Bartlett long variance
+estimator, deﬁned as follows:
+ˆω2
+Bart = ˆΥ0 + 2
+τ−1󰁛
+j=1
+󰀃
+1 − j
+τ
+󰀄ˆΥj.
+To assess the statistical signiﬁcance of the improved predictive performance achieved by
+method j, we conduct a hypothesis test comparing it to method i, where method i serves
+as the benchmark estimator. The null hypothesis (H0) asserts that there is no signiﬁcant
+diﬀerence in MSFE between the two methods, speciﬁcally H0 : MSFEi = MSFEj. In
+contrast, the alternative hypothesis (Ha) posits that method j outperforms method i,
+i.e., Ha : MSFEi > MSFEj.
+Figures 1a and 1b show the estimated rescaled break date 󰁥s0 and the estimated weights
+󰁥γ, respectively. Based on these ﬁgures, we conclude that the break date is estimated to
+lie at the 85th percentile of the data approximately 50% of the time. Slightly over 30%
+of the time, it is estimated to lie at the 50th percentile. The remaining break datessuch
+as the 40th, 60th, 70th, and 80th percentileseach occur with a frequency below 10%.
+The estimated optimal weights for the WLL estimator appear to be bimodally dis-
+Nonparametric Combination Forecasting 23
+tributed. In about 47% of cases, the estimated optimal weight is zero. In approximately
+15% of cases, we observe 󰁥γ = 0.11 or 0.22, while in around 9% of cases, 󰁥γ = 0.33 or
+1.0. In the latter case, full weight is placed on the pre-break sample, corresponding to
+full-sample estimation.
+(a) Estimated rescaled breakdate 󰁥s0
+ (b) Estimated weight 󰁥γ
+Figure 1: Distribution of estimated WLL parameters of model (4.16).
+Table 2 displays the MSFE of diﬀerent forecasting methods outlined in Table 1, calcu-
+lated at forecast horizon τ = 1, 2, 3, 4, and 5 months. Compared to the benchmark, the
+WLL, PBLL, and aveW estimators yield signiﬁcantly lower MSFEs at the ﬁrst forecast
+horizons. The WLL and PBLL are signiﬁcant at the 5% level, while aveW is signiﬁcant
+at the 10% level. As the forecast horizon increases, the MSFEs tend to rise, particularly
+for the WLL and PBLL, and become statistically indiﬀerent from the benchmark. All
+other methods yield MSFEs that are either comparable to or larger than those of the
+Table 2: 1,000 × MSFE of estimators described in Table 1 at forecast horizon τ = 1, 2, 3, 4 and 5
+months.
+τ PBOLS WLL PBLL FSLL FSOLS WGLS PPP optW optWd aveW
+1 0.425 0.394** 0.396** 0.487 0.507 0.425 0.700 0.894 0.701 0.395*
+2 0.439 0.443 0.445 0.494 0.501 0.439 0.717 0.912 0.723 0.400
+3 0.455 0.497 0.497 0.477 0.496 0.454 0.735 0.929 0.741 0.405
+4 0.470 0.513 0.519 0.477 0.493 0.470 0.755 0.946 0.761 0.409
+5 0.484 0.547 0.571 0.482 0.492 0.483 0.776 0.961 0.784 0.413
+Note: ***,**, and * indicate signiﬁcance of DM test at 1%, 5%, and 10% level, respectively. Benchmark
+is the OLS postbreak estimator (PBOLS) using multifold forward-validation for the tuning parameters.
+24 Cai et al.
+benchmark. The Diebold-Mariano tests suggest that these diﬀerences are not statistically
+signiﬁcant.
+The relatively weak performance of our proposed weighted local linear (WLL) models
+at longer horizons may be attributed to several factors. First, local linear models tend to
+perform best when the data exhibit strong local structure, which may be less informative
+at longer horizons. Second, the forecast accuracy of these models depends heavily on
+tuning parameters such as the kernel bandwidth and the pre-break weights, both of
+which require cross-validation. In practice, the performance of the estimator may degrade
+if these parameters are not tuned optimally or if the underlying structure changes in ways
+not captured by the model.
+5. CONCLUSION
+When forecasting time series data, structural breaks can present a signiﬁcant challenge.
+Existing literature has proposed several methods to handle structural breaks, but they
+tend to be (semi-)parametric in nature. Typically, these methods incorporate information
+from the pre-break period by assigning weights between 0 and 1 to the relevant obser-
+vations. Building on this idea, this paper proposes a similar nonparametric estimator
+which oﬀers the advantage of not requiring any speciﬁc functional form. Our proposed
+weighted local linear estimator has been shown in previous studies to outperform the
+usual post-break estimator in parametric cases.
+However, our study only considers a single break and a low dimensional covariate, say
+less than 5, due to the so-called curse of dimensionality. This could be problematic in more
+complex situations, such as longer time series data with multiple breaks or with missing
+relevant covariates or with large or ultra large d (either d → ∞ and d/n → 0 or d ≫ n).
+To overcome these diﬃculties, one might use some dimension reduction approaches such
+as functional coeﬃcient model as in Cai et al. (2000) and Cai et al. (2024), additive
+model as in Cai and Masry (2000), semiparametric model as in Fan et al. (2003) and Cai
+et al. (2015), and references therein. Of course, various machine learning methods can
+Nonparametric Combination Forecasting 25
+be used to estimate these functionals. These extensions warrant further investigation as
+future research topics.
+Finally, it is worth to point out that in real-world applications, where the break date is
+unknown, an accurate estimation of break dates is essential. To address this issue, future
+research could explore robust nonparametric methods for testing and estimating multiple
+breaks in time series data. Such eﬀorts would help to further improve the accuracy and
+reliability of time series forecasting in the presence of structural breaks. In addition,
+future research could focus on determining which covariates to include in the model, as
+well as the optimal number of covariates, in order to create a more powerful forecasting
+model. Therefore, developing model selection criteria is essential and deserves further
+investigation. Furthermore, the present study does not cover how to construct prediction
+intervals of the generated forecasts. In order to address this objective, a potential avenue
+for future research could involve a quantile regression approach that takes into account
+structural breaks.
+ACKNOWLEDGEMENTS
+Authors are grateful to a partial support from Natural Sciences Foundation of China
+grants (72322016, 72073126, 72091212, 71973116, 71631004, 72033008) and Young Elite
+Scientists Sponsorship Program by CAST[YESS20200072].
+REFERENCES
+Ando, T. and K.-C. Li (2014). A model-averaging approach for high-dimensional regres-
+sion. Journal of the American Statistical Association 109 (505), 254–265.
+Bickel, S., M. Br¨uckner, and T. Scheﬀer (2009). Discriminative learning under covariate
+shift. Journal of Machine Learning Research 10 (September), 2137–2155.
+Boot, T. and A. Pick (2020). Does modeling a structural break improve forecast accuracy?
+Journal of Econometrics 215 (1), 35–59.
+Cai, Z. (2007). Trending time-varying coeﬃcient time series models with serially corre-
+lated error. Journal of Econometrics 136 (1), 163–188.
+26 Cai et al.
+Cai, Z., J. Fan, and Q. Yao (2000). Functional-coeﬃcient regression models for nonlinear
+time series. Journal of the American Statistical Association 95 (451), 941–956.
+Cai, Z., Y. Fang, M. Lin, and Z. Wu (2023). A quasi synthetic control method for
+nonlinear models with high-dimensional covariates. Forthcoming in Statistica Sinica.
+Cai, Z., T. Juhl, and B. Yang (2015). Functional index coeﬃcient models with variable
+selection. Journal of Econometrics 189 (2), 272–284.
+Cai, Z., X. Liu, and L. Su (2024). Functional-coeﬃcient VAR model for dynamic quan-
+tiles and its application to constructing nonparametric ﬁnancial network. Working
+Paper Department of Economics, University of Kansas, (revised).
+Cai, Z. and E. Masry (2000). Nonparametric estimation of additive nonlinear arx time
+series: Local linear ﬁtting and projections. Econometric Theory 16 (4), 465–501.
+Cheng, X. and B. E. Hansen (2015). Forecasting with factor-augmented regression: A
+frequentist model averaging approach. Journal of Econometrics 186 (2), 280–293.
+Clements, M. P. and D. F. Hendry (2006). Forecasting with breaks, In G. Elliott, C.
+Granger and A. Timmermann (eds.). Volume 1 of Handbook of Economic Forecasting,
+pp. 605–657. Elsevier.
+Clements, M. P. and D. F. Hendry (2011). Forecasting from misspeciﬁed Models in the
+presence of unanticipated location shifts, In, M.P. Clements and D. F. Hendry (eds.).
+The Oxford Handbook of Economic Forecasting, pp. 271–314. Oxford University Press.
+Diebold, F. X. and R. S. Mariano (1995). Comparing predictive accuracy. Journal of
+Business & Economic Statistics 13 (3), 253–263.
+Fan, J. and I. Gijbels (1996). Local Polynomial Modeling and Its Applications. Chapman
+& Hall.
+Fan, J. and Q. Yao (2003). Nonlinear Time Series: Nonparametric and Parametric
+Methods. Spinger-Verlag, New York.
+Fan, J., Q. Yao, and Z. Cai (2003). Adaptive varying-coeﬃcient linear models. Journal
+of the Royal Statistical Society, series B 65 (1), 57–80.
+Friedman, M. (1968). The role of monetary policy. American Economic Review 45 (7),
+1–17.
+Nonparametric Combination Forecasting 27
+Gao, Y., X. Zhang, S. Wang, and G. Zou (2016). Model averaging based on leave-subject-
+out cross-validation. Journal of Econometrics 192 (1), 139–151.
+Hansen, B. E. (2007). Least squares model averaging. Econometrica 75 (4), 1175–1189.
+Hansen, B. E. (2008). Least-squares forecast averaging. Journal of Econometrics 146 (2),
+342–350.
+Hansen, B. E. and J. S. Racine (2012). Jackknife model averaging. Journal of Econo-
+metrics 167 (1), 38–46.
+Harvey, D., S. Leybourne, and P. Newbold (1997). Testing the equality of prediction
+mean squared errors. International Journal of Forecasting 13 (2), 281–291.
+Harvey, D. I., S. J. Leybourne, and E. J. Whitehouse (2017). Forecast evaluation tests
+and negative long-run variance estimates in small samples. International Journal of
+Forecasting 33 (4), 833–847.
+Hjort, N. L. and G. Claeskens (2003). Frequentist model average estimators. Journal of
+the American Statistical Association 98 (464), 879–899.
+Hu, X. and X. Zhang (2023). Optimal parameter-transfer learning by semiparametric
+model averaging. Journal of Machine Learning Research 24 (358), 1–53.
+Lee, T.-H., S. Parsaeian, and A. Ullah (2022a). Forecasting under structural breaks using
+improved weighted estimation. Oxford Bulletin of Economics and Statistics 84 (6),
+1485–1501.
+Lee, T.-H., S. Parsaeian, and A. Ullah (2022b). Optimal forecast under structural breaks.
+Journal of Applied Econometrics 37 (5), 965–987e.
+Li, C., Q. Li, J. S. Racine, and D. Zhang (2018). Optimal model averaging of varying
+coeﬃcient models. Statistica Sinica 28 (4), 2795–2809.
+Li, K.-C. (1987). Asymptotic optimality for Cp, Cl, cross-validation and generalized
+cross-validation: Discrete index set. Annals of Statistics 15 (4), 958–975.
+Liao, J., X. Zong, X. Zhang, and G. Zou (2019). Model averaging based on leave-subject-
+out cross-validation for vector autoregressions. Journal of Econometrics 209 (1), 35–60.
+Liu, Q. and R. Okui (2013). Heteroscedasticity-robust cp model averaging. The Econo-
+metrics Journal 16 (3), 463–472.
+28 Cai et al.
+Mankiw, N. G. (2001). The inexorable and mysterious tradeoﬀ between inﬂation and
+unemployment. The Economic Journal 111 (471), 45–61.
+Mohr, M. and L. Selk (2020). Estimating change points in nonparametric time series
+regression models. Statistical Papers 61, 1437–1463.
+Parsaeian, S. (2023). Structural breaks in seemingly unrelated regression models. Macroe-
+conomic Dynamics, 1–24.
+Pesaran, M. and A. Pick (2011). Forecast combination across estimation windows. Jour-
+nal of Business & Economic Statistics 29 (2), 307–318.
+Pesaran, M. H., A. Pick, and M. Pranovich (2013). Optimal forecasts in the presence of
+structural breaks. Journal of Econometrics 177 (2), 134–152.
+Pesaran, M. H. and A. Timmermann (2005). Small sample properties of forecasts from
+autoregressive models under structural breaks. Journal of Econometrics 129 (1-2),
+183–217.
+Pesaran, M. H. and A. Timmermann (2007). Selection of estimation window in the
+presence of breaks. Journal of Econometrics 137 (1), 134–161.
+Phelps, E. S. (1968). Money-wage dynamics and labor-market equilibrium. Journal of
+political economy 76 (4, Part 2), 678–711.
+Phillips, A. W. (1958). The relation between unemployment and the rate of change of
+money wage rates in the united kingdom, 18611957. Economica 25 (100), 283–299.
+Racine, J. S., Q. Li, D. Yu, and L. Zheng (2023). Optimal model averaging of mixed-data
+kernel-weighted spline regressions. Journal of Business & Economic Statistics 41 (4),
+1251–1261.
+Rossi, B. (2013). Advances in forecasting under instability, In G. Elliott, C. Granger and
+A. Timmermann (eds.). Handbook of Economic Forecasting Vol. 2, 1203–1324.
+Shao, J. (1993). Linear model selection by cross-validation. Journal of the American
+Statistical Association 88 (422), 486–494.
+Sugiyama, M., T. Suzuki, and T. Kanamori (2012). Density Ratio Estimation in Machine
+Learning. Cambridge University Press, New York.
+Nonparametric Combination Forecasting 29
+Sun, Y., S. Hong, and Z. Cai (2023). Optimal local model averaging for divergent-
+dimensional functional-coeﬃcient regressions. Working Paper, Department of Eco-
+nomics, University of Kansas.
+Sun, Y., Y. Hong, T.-H. Lee, S. Wang, and X. Zhang (2021). Time-varying model
+averaging. Journal of Econometrics 222 (2), 974–992.
+Timmermann, A. (2006). Forecast combinations, In G. Elliott, C. Granger and A. Tim-
+mermann (eds.). Volume 1 of Handbook of Economic Forecasting, pp. 135–196. Elsevier.
+Wan, A. T., X. Zhang, and G. Zou (2010). Least squares model averaging by mallows
+criterion. Journal of Econometrics 156 (2), 277–283.
+Zhang, X. and C.-A. Liu (2023). Model averaging prediction by K-fold cross-validation.
+Journal of Econometrics 235 (2), 280–301.
+Zhang, X., D. Yu, G. Zou, and H. Liang (2016). Optimal model averaging estimation for
+generalized linear models and generalized linear mixed-eﬀects models. Journal of the
+American Statistical Association 111 (516), 1775–1790.
+Zhu, F. (2005). The fragility of the phillips curve: A bumpy ride in the frequency domain.
+Zhu, R., A. T. Wan, X. Zhang, and G. Zou (2019). A mallows-type model averaging
+estimator for the varying-coeﬃcient partially linear model. Journal of the American
+Statistical Association 114 (526), 882–892.

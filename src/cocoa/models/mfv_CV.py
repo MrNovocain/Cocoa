@@ -227,3 +227,102 @@ class MFVConvexComboValidator(MFVValidator):
         best_score = gamma_losses[best_idx]
 
         return best_gamma, best_score
+
+
+class MFVGeneralizedComboValidator(MFVValidator):
+    """
+    Validator for tuning the beta parameter of the generalized non-linear combination.
+    y_hat = y_post + beta * g(y_pre - y_post)
+    """
+
+    def tune_beta(
+        self,
+        model_pre: BaseModel,
+        model_post: BaseModel, # These should be unfitted or we fit them inside? 
+        # Actually, standard MFV fits them on expanding windows. 
+        # So we need the classes and params, not instances.
+        model_class_pre: Type[BaseModel],
+        params_pre: Dict[str, Any],
+        model_class_post: Type[BaseModel],
+        params_post: Dict[str, Any],
+        X_train_full: pd.DataFrame,
+        y_train_full: pd.Series,
+        break_index: int,
+        shrinkage_func: Any, # ShrinkageFunction type
+        beta_grid: Iterable[float] = np.linspace(0, 1, 21),
+        verbose: bool = True,
+    ) -> Tuple[float, float]:
+        
+        X_train_pre_full = X_train_full.iloc[:break_index]
+        y_train_pre_full = y_train_full.iloc[:break_index]
+        X_train_post_full = X_train_full.iloc[break_index:]
+        y_train_post_full = y_train_full.iloc[break_index:]
+
+        T_post = len(X_train_post_full)
+        self._set_block_size(T_post)
+        if self.block_size == 0:
+            raise ValueError("Post-break training data is too short for the number of MFV folds.")
+
+        cv_start_post = T_post - self.Q * self.block_size
+
+        y_val_all, y_pre_all, y_post_all = [], [], []
+
+        for q in range(self.Q):
+            val_start_idx_post = cv_start_post + q * self.block_size
+            val_end_idx_post = val_start_idx_post + self.block_size
+
+            X_val = X_train_post_full.iloc[val_start_idx_post:val_end_idx_post]
+            y_val = y_train_post_full.iloc[val_start_idx_post:val_end_idx_post]
+
+            # Training set for this fold (relative to post-break data)
+            train_end_idx_post = val_start_idx_post
+            X_tr_post = X_train_post_full.iloc[:train_end_idx_post]
+            y_tr_post = y_train_post_full.iloc[:train_end_idx_post]
+
+            # Pre-model is always trained on all available pre-break data
+            model_pre = model_class_pre(**params_pre)
+            model_pre.fit(X_train_pre_full, y_train_pre_full)
+            y_pre_pred = model_pre.predict(X_val)
+
+            # Post-model is trained on its part of the expanding window
+            model_post = model_class_post(**params_post)
+            if not X_tr_post.empty:
+                model_post.fit(X_tr_post, y_tr_post)
+                y_post_pred = model_post.predict(X_val)
+            else:
+                y_post_pred = np.full(len(X_val), np.nan)
+
+            y_val_all.extend(y_val.to_list())
+            y_pre_all.extend(y_pre_pred.tolist())
+            y_post_all.extend(y_post_pred.tolist())
+
+        y_val_arr = np.array(y_val_all)
+        y_pre_arr = np.array(y_pre_all)
+        y_post_arr = np.array(y_post_all)
+
+        valid_mask = ~np.isnan(y_post_arr)
+        if not np.any(valid_mask):
+            raise ValueError("Could not make any valid post-break predictions during MFV for beta tuning.")
+
+        y_val_filt, y_pre_filt, y_post_filt = y_val_arr[valid_mask], y_pre_arr[valid_mask], y_post_arr[valid_mask]
+
+        beta_losses = []
+        
+        # Pre-calculate difference and shrinkage once
+        diff = y_pre_filt - y_post_filt
+        shrunk_diff = shrinkage_func(diff)
+
+        for beta in beta_grid:
+            # y_hat = y_post + beta * g(y_pre - y_post)
+            y_hat = y_post_filt + beta * shrunk_diff
+            
+            loss = np.mean((y_val_filt - y_hat)**2)
+            beta_losses.append(loss)
+            if verbose:
+                print(f"  Beta: {beta:.2f}, MFV MSE: {loss:.6f}")
+
+        best_idx = np.argmin(beta_losses)
+        best_beta = list(beta_grid)[best_idx]
+        best_score = beta_losses[best_idx]
+
+        return best_beta, best_score

@@ -641,3 +641,29 @@ class ConvexComboExperimentRunner(ExperimentRunner):
             }
 
         return best_gamma, best_score_gamma
+
+
+class MockExperimentRunner(ExperimentRunner):
+    """
+    A mock runner that returns random MSFE values for testing purposes.
+    """
+    def __init__(self, **kwargs):
+        # Initialize with minimal requirements
+        self.model_name = kwargs.get("model_name", "MockModel")
+        self.save_results = False
+        self.output_dir = None
+
+    def run(self) -> Dict[str, Any]:
+        """Returns mock results."""
+        import random
+        # Return a random MSFE between 0.0005 and 0.0015 (typical for log returns)
+        mock_msfe = random.uniform(0.0005, 0.0015)
+        return {
+            "best_params": {},
+            "best_mfv": mock_msfe,
+            "avg_mse": None,
+            "avg_bias_sq": None,
+            "avg_variance": None,
+            "oos_mse": mock_msfe,
+            "in_sample_cv_mse": mock_msfe,
+        }

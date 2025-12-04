@@ -13,6 +13,7 @@ src/cocoa/experiments/MDM.py
 src/cocoa/experiments/__init__.py
 src/cocoa/experiments/break_detection.py
 src/cocoa/experiments/gamma_tuning_simulation.py
+src/cocoa/experiments/rolling_wll.py
 src/cocoa/experiments/run_krr_combo_cv.py
 src/cocoa/experiments/run_ml_combo_cv.py
 src/cocoa/experiments/run_np_combo_cv.py
