@@ -324,8 +324,8 @@ class RollingWLLExperiment:
         plt.grid(True, alpha=0.3)
         self._save_plot("break_vs_origin.png")
 
-    def plot_pi_vs_break(self) -> None:
-        """Plot PI vs detected break date with shading where PI > 0."""
+    def plot_pi_vs_origin(self, reverse_time: bool = True) -> None:
+        """Plot PI vs rolling origin date."""
         df = self._get_results_df()
         if df.empty:
             print("No records to plot.")
@@ -336,7 +336,7 @@ class RollingWLLExperiment:
         # Plot PI points
         sns.scatterplot(
             data=df, 
-            x="detected_break_date", 
+            x="origin_date", 
             y="pi", 
             hue="hit", 
             palette={True: COLORS['hit'], False: COLORS['miss']},
@@ -347,21 +347,43 @@ class RollingWLLExperiment:
         # Add horizontal line at 0
         plt.axhline(0, color="black", linestyle="--", alpha=0.5)
         
-        # Shade regions where PI > 0
-        ylim = plt.ylim()
-        # Ensure we cover the full y-range for shading
-        y_min, y_max = ylim
-        if y_max < 0.1: y_max = 0.1 # Ensure some positive range
-        
-        plt.fill_between(plt.xlim(), 0, y_max, color=COLORS['hit'], alpha=0.1)
-        plt.ylim(ylim) # Restore limits
+        if reverse_time:
+            plt.gca().invert_xaxis()
 
-        plt.title("Performance Improvement (PI) vs Detected Break Date", fontsize=14, fontweight='bold')
-        plt.xlabel("Detected Break Date", fontsize=12)
+        plt.title("Performance Improvement (PI) vs Rolling Origin", fontsize=14, fontweight='bold')
+        plt.xlabel("Rolling Origin Date", fontsize=12)
         plt.ylabel("PI (1 - MSFE_WLL / MSFE_Base)", fontsize=12)
         plt.legend(title="WLL Outperforms", loc='upper right')
         plt.grid(True, alpha=0.3)
-        self._save_plot("pi_vs_break.png")
+        self._save_plot("pi_vs_origin.png")
+
+    def plot_msfe_comparison(self, reverse_time: bool = True) -> None:
+        """Plot MSFE of WLL vs Best ML Baseline over time."""
+        df = self._get_results_df()
+        if df.empty:
+            print("No records to plot.")
+            return
+
+        # Calculate msfe_base based on the chosen baseline
+        df['msfe_base'] = df.apply(lambda row: row['msfe_RF'] if row['baseline'] == 'RF' else row['msfe_XGb'], axis=1)
+
+        plt.figure(figsize=(12, 6))
+        
+        # Plot WLL MSFE
+        sns.lineplot(data=df, x="origin_date", y="msfe_wll", marker="o", label="WLL (NP Combo)", color=COLORS['wll'])
+        
+        # Plot Baseline MSFE
+        sns.lineplot(data=df, x="origin_date", y="msfe_base", marker="x", label="Best ML Baseline", color=COLORS['rf'])
+        
+        if reverse_time:
+            plt.gca().invert_xaxis()
+            
+        plt.title("MSFE Comparison: WLL vs Baseline", fontsize=14, fontweight='bold')
+        plt.xlabel("Rolling Origin Date", fontsize=12)
+        plt.ylabel("MSFE", fontsize=12)
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        self._save_plot("msfe_comparison.png")
 
     def plot_hit_rate(self) -> None:
         """Plot cumulative hit rate over time."""
@@ -428,7 +450,8 @@ if __name__ == "__main__":
     
     # Generate plots
     exp.plot_break_vs_origin()
-    exp.plot_pi_vs_break()
+    exp.plot_pi_vs_origin()
+    exp.plot_msfe_comparison()
     exp.plot_hit_rate()
     exp.plot_pi_distribution()
 
