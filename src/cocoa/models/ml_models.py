@@ -19,11 +19,18 @@ except ImportError:  # GPU fallback to CPU implementation
 
 def _xgb_gpu_available() -> bool:
     """Returns True when the installed XGBoost build has CUDA support."""
-    has_cuda_check = getattr(xgb.core, "_has_cuda_support", None)
     try:
-        return bool(has_cuda_check and has_cuda_check())
+        # Try to use device="cuda" on a dummy booster
+        # This is more reliable than checking internal flags in newer XGBoost versions
+        from xgboost import XGBRegressor
+        model = XGBRegressor(device="cuda", n_estimators=1, max_depth=1)
+        # We don't need to fit, just checking if the parameter is accepted might be enough?
+        # Actually, let's try to fit on tiny data to be sure.
+        X = np.array([[0.0]])
+        y = np.array([0.0])
+        model.fit(X, y)
+        return True
     except Exception:
-        print("GPU not available")
         return False
 
 
@@ -87,6 +94,11 @@ class RFModel(BaseSklearnModel):
         # scikit-learn CPU fallback should use all cores
         if not use_cuml:
             hyperparams.setdefault("n_jobs", -1)
+        else:
+            # cuML requires an integer for max_depth, cannot be None
+            if hyperparams.get("max_depth") is None:
+                # print("Warning: max_depth=None is not supported by cuML RF. Setting max_depth=16.")
+                hyperparams["max_depth"] = 16
 
         self.using_gpu = use_cuml
         super().__init__(model_class=model_class, **hyperparams)
@@ -118,7 +130,8 @@ class XGBModel(BaseSklearnModel):
         }
         gpu_enabled = use_gpu and _xgb_gpu_available()
         if gpu_enabled:
-            hyperparams.update({"tree_method": "gpu_hist", "predictor": "gpu_predictor"})
+            # XGBoost 2.0+ uses device="cuda"
+            hyperparams.update({"device": "cuda", "tree_method": "hist"})
         else:
             hyperparams.setdefault("tree_method", "hist")
 

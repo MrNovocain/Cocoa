@@ -6,6 +6,7 @@ docs/rolling_wll_experiment_plan.md. Implementations should wire in the
 existing runners and Mohr detector without changing signatures.
 """
 
+
 from __future__ import annotations
 import matplotlib
 matplotlib.use('Agg')
@@ -241,7 +242,7 @@ class RollingWLLExperiment:
         self.break_pilot = break_index
         return break_index
 
-    def run(self):
+    def run(self, n_jobs: int = -1):
         """
         Rolling break-aware WLL vs ML experiment in a loop.
 
@@ -257,6 +258,8 @@ class RollingWLLExperiment:
         - Compute PI and hit flag; collect rows.
         - Persist results and produce plots with shaded hit regions.
         """
+        from joblib import Parallel, delayed
+
         last_index = self.dataset.get_1_based_index_from_date(self.last_date)
         # Check if we are trying to predict the future (impossible) or just OOS
         # This check might need adjustment based on exact definitions, but let's keep it simple
@@ -265,8 +268,21 @@ class RollingWLLExperiment:
         
         # Iterate from start_index (recent) down to end_index (past)
         # self.step is negative, so we subtract 1 from end_index to include it
-        for i in range(self.start_index, self.end_index - 1, self.step):
-            self.records.append(self.run_single_trial(i))
+        indices = range(self.start_index, self.end_index - 1, self.step)
+        
+        def safe_run_trial(i):
+            try:
+                return self.run_single_trial(i)
+            except Exception as e:
+                print(f"Error in trial {i}: {e}")
+                return None
+
+        results = Parallel(n_jobs=n_jobs)(
+            delayed(safe_run_trial)(i) for i in indices
+        )
+        
+        # Filter out failed trials
+        self.records = [r for r in results if r is not None]
 
 
 
@@ -398,7 +414,9 @@ class RollingWLLExperiment:
 
 
 if __name__ == "__main__":
+    print("Starting rolling_wll.py...")
     dataset = CocoaDataset()
+    print("Dataset loaded.")
     date = dataset.get_last_date()
     index = dataset.get_1_based_index_from_date(date)
     # Start from recent (index-1) and roll back to past (index-20)
