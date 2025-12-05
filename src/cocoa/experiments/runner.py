@@ -37,18 +37,42 @@ from ..utils.bias_var_decomposition import (
 
 
 class Tee:
-    """A helper class to redirect stdout to both console and a file."""
+    """A helper class to redirect stdout to both console and a file.
+    
+    Thread-safe: handles concurrent access and gracefully skips file writes
+    if the file handle has been closed (e.g., by another thread).
+    """
     def __init__(self, original_stdout, file):
+        import threading
         self.original_stdout = original_stdout
         self.file = file
+        self._lock = threading.Lock()
+        self._closed = False
 
     def write(self, text):
         self.original_stdout.write(text)
-        self.file.write(text)
+        with self._lock:
+            if not self._closed and self.file and not self.file.closed:
+                try:
+                    self.file.write(text)
+                except ValueError:
+                    # File was closed between check and write
+                    self._closed = True
 
     def flush(self):
         self.original_stdout.flush()
-        self.file.flush()
+        with self._lock:
+            if not self._closed and self.file and not self.file.closed:
+                try:
+                    self.file.flush()
+                except ValueError:
+                    # File was closed between check and flush
+                    self._closed = True
+    
+    def close(self):
+        """Mark the Tee as closed so writes are no-ops."""
+        with self._lock:
+            self._closed = True
 
 @contextmanager
 def redirect_stdout_to_log_file(filepath):

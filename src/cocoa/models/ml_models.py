@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from abc import abstractmethod
 from typing import Any, Dict
+from functools import lru_cache
 
 from sklearn.ensemble import RandomForestRegressor as SklearnRandomForestRegressor
 import xgboost as xgb
@@ -17,6 +18,7 @@ except ImportError:  # GPU fallback to CPU implementation
     _HAS_CUML = False
 
 
+@lru_cache(maxsize=1)
 def _xgb_gpu_available() -> bool:
     """Returns True when the installed XGBoost build has CUDA support."""
     try:
@@ -137,3 +139,23 @@ class XGBModel(BaseSklearnModel):
 
         self.using_gpu = gpu_enabled
         super().__init__(model_class=xgb.XGBRegressor, **hyperparams)
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """
+        Makes predictions, handling device mismatch for XGBoost 2.0+ on GPU.
+        """
+        if not self.is_fitted:
+            raise RuntimeError("Model must be fitted before calling predict().")
+        
+        if self.using_gpu:
+            try:
+                # Temporarily switch to CPU to avoid device mismatch warning 
+                # (and implicit fallback overhead) when input is on CPU.
+                self.model.set_params(device="cpu")
+                preds = self.model.predict(X)
+            finally:
+                # Restore GPU device
+                self.model.set_params(device="cuda")
+            return np.asarray(preds)
+        
+        return np.asarray(self.model.predict(X))

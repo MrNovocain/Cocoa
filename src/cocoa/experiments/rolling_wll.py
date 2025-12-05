@@ -94,7 +94,6 @@ class RollingWLLExperiment:
         self.break_pilot: Optional[int] = None
         self.trim_window: Optional[Tuple[int, int]] = None
         self.dataset = dataset
-        self.dataset = dataset
         
         # Enforce reverse chronological order (recent -> past)
         if start_index > end_index:
@@ -105,6 +104,22 @@ class RollingWLLExperiment:
         self.step = self.step # Assign the (potentially modified) step
         self.last_date = self.dataset.get_last_date()
         self.records: List[RollingResultRow] = []
+
+        # Setup custom output directory
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Get date strings for folder name
+        start_date_str = self.dataset.get_date_from_1_based_index(start_index).strftime("%Y-%m-%d")
+        end_date_str = self.dataset.get_date_from_1_based_index(end_index).strftime("%Y-%m-%d")
+        
+        self.output_dir = os.path.join(
+            "output", 
+            "rolling_experiments", 
+            f"{timestamp}_{start_date_str}_to_{end_date_str}"
+        )
+        os.makedirs(self.output_dir, exist_ok=True)
+        print(f"Rolling Experiment initialized. Output dir: {self.output_dir}")
 
     def run_single_trial(
         self,
@@ -122,7 +137,12 @@ class RollingWLLExperiment:
 
         oos_start_date = self.dataset.dates.iloc[cur -1]
         cur_date = self.dataset.get_date_from_1_based_index(cur)
-        if not self.last_date == cur_date:
+        
+        # In mock mode, skip expensive Mohr detection and reuse pilot break
+        if baseline_mode == "mock":
+            break_index = self.break_pilot
+            # trim_window comes from the pilot Mohr
+        elif not self.last_date == cur_date:
             mohr_test = MohrRunner(cur_date.strftime("%Y-%m-%d"))
             break_index = mohr_test.run_mohr_break_detection()
             self.trim_window = mohr_test.get_trimmed_indexies()
@@ -167,36 +187,45 @@ class RollingWLLExperiment:
             wll_out = wll_runner.run()
             msfe_wll = wll_out.get("oos_mse")
 
-            # RF baseline
-            rf_runner = ExperimentRunner(
-                model_name="RF",
-                model_class=RFModel,
-                feature_cols=self.feature_cols,
-                target_col=self.target_col,
-                data_path=self.data_path,
-                oos_start_date=oos_start_date,
-                save_results=False,
-            )
-            rf_out = rf_runner.run()
-            msfe_rf = rf_out.get("oos_mse")
+            if baseline_mode == "wll_only":
+                msfe_rf = float("nan")
+                msfe_xgb = float("nan")
+            else:
+                # RF baseline
+                rf_runner = ExperimentRunner(
+                    model_name="RF",
+                    model_class=RFModel,
+                    feature_cols=self.feature_cols,
+                    target_col=self.target_col,
+                    data_path=self.data_path,
+                    oos_start_date=oos_start_date,
+                    save_results=False,
+                )
+                rf_out = rf_runner.run()
+                msfe_rf = rf_out.get("oos_mse")
 
-            # XGB baseline
-            xgb_runner = ExperimentRunner(
-                model_name="XGB",
-                model_class=XGBModel,
-                feature_cols=self.feature_cols,
-                target_col=self.target_col,
-                data_path=self.data_path,
-                oos_start_date=oos_start_date,
-                save_results=False,
-            )
-            xgb_out = xgb_runner.run()
-            msfe_xgb = xgb_out.get("oos_mse")
+                # XGB baseline
+                xgb_runner = ExperimentRunner(
+                    model_name="XGB",
+                    model_class=XGBModel,
+                    feature_cols=self.feature_cols,
+                    target_col=self.target_col,
+                    data_path=self.data_path,
+                    oos_start_date=oos_start_date,
+                    save_results=False,
+                )
+                xgb_out = xgb_runner.run()
+                msfe_xgb = xgb_out.get("oos_mse")
 
-        best_ml_msfe ,best_type = min(msfe_rf, msfe_xgb), "RF" if msfe_rf < msfe_xgb else "XGB"
-        msfe_base = best_ml_msfe
-
-        pi = 1 - msfe_wll / msfe_base if msfe_base not in (None, 0) else None
+        if baseline_mode == "wll_only":
+            best_type = "None"
+            msfe_base = float("nan")
+            pi = None
+        else:
+            best_ml_msfe ,best_type = min(msfe_rf, msfe_xgb), "RF" if msfe_rf < msfe_xgb else "XGB"
+            msfe_base = best_ml_msfe
+            pi = 1 - msfe_wll / msfe_base if msfe_base not in (None, 0) else None
+        
         hit = bool(pi is not None and pi > 0)
 
         return RollingResultRow(
@@ -242,7 +271,7 @@ class RollingWLLExperiment:
         self.break_pilot = break_index
         return break_index
 
-    def run(self, n_jobs: int = -1):
+    def run(self, baseline_mode: str = "auto_best_ml", n_workers: int = 1):
         """
         Rolling break-aware WLL vs ML experiment in a loop.
 
@@ -257,38 +286,88 @@ class RollingWLLExperiment:
         (auto-best ML or fixed RF).
         - Compute PI and hit flag; collect rows.
         - Persist results and produce plots with shaded hit regions.
+        
+        Args:
+            baseline_mode: "auto_best_ml" for real models, "mock" for MockExperimentRunner.
+            n_workers: Number of parallel workers. 1 = sequential, >1 = parallel using threads.
         """
-        from joblib import Parallel, delayed
-
-        last_index = self.dataset.get_1_based_index_from_date(self.last_date)
-        # Check if we are trying to predict the future (impossible) or just OOS
-        # This check might need adjustment based on exact definitions, but let's keep it simple
+        from concurrent.futures import ThreadPoolExecutor, as_completed
         
         self.run_pilot_mohr()
         
         # Iterate from start_index (recent) down to end_index (past)
         # self.step is negative, so we subtract 1 from end_index to include it
-        indices = range(self.start_index, self.end_index - 1, self.step)
+        indices = list(range(self.start_index, self.end_index - 1, self.step))
         
-        def safe_run_trial(i):
+        def run_trial(i):
             try:
-                return self.run_single_trial(i)
+                result = self.run_single_trial(i, baseline_mode=baseline_mode)
+                print(f"Trial {i} completed.")
+                return result
             except Exception as e:
                 print(f"Error in trial {i}: {e}")
                 return None
-
-        results = Parallel(n_jobs=n_jobs)(
-            delayed(safe_run_trial)(i) for i in indices
-        )
+        
+        if n_workers == 1:
+            # Sequential execution
+            results = [run_trial(i) for i in indices]
+        else:
+            # Parallel execution using ThreadPoolExecutor (works better on Windows)
+            results = [None] * len(indices)
+            with ThreadPoolExecutor(max_workers=n_workers) as executor:
+                future_to_idx = {executor.submit(run_trial, i): idx for idx, i in enumerate(indices)}
+                for future in as_completed(future_to_idx):
+                    idx = future_to_idx[future]
+                    results[idx] = future.result()
         
         # Filter out failed trials
         self.records = [r for r in results if r is not None]
+        
+        # Post-process trimming flags
+        self._post_process_trimming_flags()
 
 
 
 
 
 
+
+    def _post_process_trimming_flags(self) -> None:
+        """
+        Post-hoc check: if a trial's trimming window obscures a break detected
+        globally (in valid trials), set trimmed_flag = True.
+        
+        Iterates from PAST to RECENT (ascending date) so we can see if broadly
+        known breaks fall into earlier (past) trials' blind spots.
+        """
+        if not self.records:
+            return
+
+        # 1. Collect all unique break dates detected across ALL trials
+        valid_breaks = {r.detected_break_date for r in self.records if r.detected_break_date is not pd.NaT}
+        
+        # 2. Sort records by origin_date ascending (Past -> Recent)
+        self.records.sort(key=lambda r: r.origin_date)
+        
+        count_trimmed = 0
+        for record in self.records:
+            if record.trimmed_window is None:
+                continue
+                
+            trim_start_idx, trim_end_idx = record.trimmed_window
+            # These are 0-based indices in the dataset.
+            # Convert to dates using the dataset
+            trim_start_date = self.dataset.dates.iloc[trim_start_idx]
+            trim_end_date = self.dataset.dates.iloc[trim_end_idx]
+            
+            # Check if ANY known break falls in [trim_start_date, trim_end_date]
+            for brk_date in valid_breaks:
+                if trim_start_date <= brk_date <= trim_end_date:
+                    record.trimmed_flag = True
+                    count_trimmed += 1
+                    break # Found one, flag it and move to next record
+                    
+        print(f"Post-processing: Flagged {count_trimmed} trials as 'trimmed' (break in blind spot).")
 
     def _get_results_df(self) -> pd.DataFrame:
         """Convert records to a DataFrame."""
@@ -298,9 +377,12 @@ class RollingWLLExperiment:
 
     def _save_plot(self, filename: str) -> None:
         """Save the current figure to the output directory."""
-        output_dir = os.path.join("output", "rolling_experiments")
-        os.makedirs(output_dir, exist_ok=True)
-        path = os.path.join(output_dir, filename)
+        if not hasattr(self, 'output_dir'):
+             # Fallback if somehow not initialized (though init should handle it)
+             self.output_dir = os.path.join("output", "rolling_experiments")
+             os.makedirs(self.output_dir, exist_ok=True)
+
+        path = os.path.join(self.output_dir, filename)
         plt.savefig(path, bbox_inches="tight", dpi=300)
         plt.close()
         print(f"Saved plot to {path}")
@@ -315,12 +397,68 @@ class RollingWLLExperiment:
         plt.figure(figsize=(12, 6))
         sns.lineplot(data=df, x="origin_date", y="detected_break_date", marker="o", color=COLORS['post_break'])
         
+        # Shade regions where trimmed_flag is True
+        # detecting contiguous regions to avoid too many axvspan calls
+        if 'trimmed_flag' in df.columns:
+            # unique sorted dates
+            df_sorted = df.sort_values('origin_date')
+            
+            # Identify changes in flag status
+            # We want to shade spans where trimmed_flag == True
+            # Getting start and end of dates for each point is tricky if adjacent. 
+            # Simple approach: Plot a span for each marked point with some width, 
+            # but since it's a time series, finding contiguous blocks is better.
+            
+            is_trimmed = df_sorted['trimmed_flag'].astype(bool).values
+            dates = df_sorted['origin_date'].values
+            
+            if is_trimmed.any():
+                # We iterate and find start/end indices of True sequences
+                import numpy as np
+                # Pad with False to handle edge cases
+                padded = np.concatenate(([False], is_trimmed, [False]))
+                # Find transitions: +1 is False->True (start), -1 is True->False (end)
+                diff = np.diff(padded.astype(int))
+                starts = np.where(diff == 1)[0]
+                ends = np.where(diff == -1)[0]
+                
+                # Plot spans
+                # Note: this logic assumes regular spacing or 'spans' covering the point.
+                # Since 'origin_date' is points, we essentially want to highlight the
+                # background "around" these points.
+                # A heuristic for width: half-distance to neighbors. 
+                # Simplest for visualization: shade from start date to end date of the block.
+                
+                # The 'ends' index in `dates` needs care because `ends` from diff is 
+                # the index AFTER the block in original array.
+                # So the block is dates[i] to dates[j-1].
+                
+                labeled = False
+                for start_idx, end_idx in zip(starts, ends):
+                    # end_idx is exclusive in Python slicing, so the last included index is end_idx - 1
+                    t1 = dates[start_idx]
+                    t2 = dates[end_idx - 1]
+                    
+                    # If single point, give it a small width or just line
+                    if start_idx == end_idx - 1:
+                        # minimal width (e.g. 1 day buffering if possible, or just the point)
+                        # We can use axvspan with same start/end, but it might disappear.
+                        # Let's rely on line thickness or simple expansion? 
+                        # Actually, let's just use the points themselves.
+                        plt.axvspan(t1, t1, color='red', alpha=0.2, 
+                                    label="Trimmed (Blind Spot)" if not labeled else None)
+                    else:
+                        plt.axvspan(t1, t2, color='red', alpha=0.2, 
+                                    label="Trimmed (Blind Spot)" if not labeled else None)
+                    labeled = True
+
         if reverse_time:
             plt.gca().invert_xaxis()
             
         plt.title("Detected Break Date vs Rolling Origin", fontsize=14, fontweight='bold')
         plt.xlabel("Rolling Origin Date", fontsize=12)
         plt.ylabel("Detected Break Date", fontsize=12)
+        plt.legend()
         plt.grid(True, alpha=0.3)
         self._save_plot("break_vs_origin.png")
 
@@ -442,10 +580,9 @@ if __name__ == "__main__":
     date = dataset.get_last_date()
     index = dataset.get_1_based_index_from_date(date)
     # Start from recent (index-1) and roll back to past (index-20)
-    exp = RollingWLLExperiment(index-1, index-20, 1)
-    # Use mock mode for testing
-    # exp.run_single_trial = lambda cur: RollingWLLExperiment.run_single_trial(exp, cur, baseline_mode="mock")
-    exp.run()
+    exp = RollingWLLExperiment(index-1, index-799, 40)
+    # Run with real models (use baseline_mode="mock" for faster testing)
+    exp.run(baseline_mode="auto_best_ml", n_workers=8)
     print(f"Ran {len(exp.records)} trials.")
     
     # Generate plots
