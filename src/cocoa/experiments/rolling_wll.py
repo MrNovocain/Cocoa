@@ -326,6 +326,15 @@ class RollingWLLExperiment:
         # Post-process trimming flags
         self._post_process_trimming_flags()
 
+        # Save results to CSV (Implementation of persistence)
+        df = self._get_results_df()
+        if not df.empty:
+            csv_path = os.path.join(self.output_dir, "rolling_results.csv")
+            df.to_csv(csv_path, index=False)
+            print(f"Saved rolling results to {csv_path}")
+        else:
+            print("No records to save.")
+
 
 
 
@@ -491,6 +500,7 @@ class RollingWLLExperiment:
         plt.title("Performance Improvement (PI) vs Rolling Origin", fontsize=14, fontweight='bold')
         plt.xlabel("Rolling Origin Date", fontsize=12)
         plt.ylabel("PI (1 - MSFE_WLL / MSFE_Base)", fontsize=12)
+        plt.yscale('symlog', linthresh=0.1)  # Use symlog to handle negative outliers
         plt.legend(title="WLL Outperforms", loc='upper right')
         plt.grid(True, alpha=0.3)
         self._save_plot("pi_vs_origin.png")
@@ -516,12 +526,45 @@ class RollingWLLExperiment:
         if reverse_time:
             plt.gca().invert_xaxis()
             
-        plt.title("MSFE Comparison: WLL vs Baseline", fontsize=14, fontweight='bold')
+        plt.title("MSFE Comparison: WLL vs Baseline (Log Scale)", fontsize=14, fontweight='bold')
         plt.xlabel("Rolling Origin Date", fontsize=12)
-        plt.ylabel("MSFE", fontsize=12)
+        plt.ylabel("MSFE (Log Scale)", fontsize=12)
+        plt.yscale('log')
         plt.legend()
         plt.grid(True, alpha=0.3)
         self._save_plot("msfe_comparison.png")
+
+    def plot_msfe_ratio(self, reverse_time: bool = True) -> None:
+        """Plot Ratio of MSFE_WLL / MSFE_Base (Log Scale)."""
+        df = self._get_results_df()
+        if df.empty:
+            print("No records to plot.")
+            return
+
+        # Calculate msfe_base
+        df['msfe_base'] = df.apply(lambda row: row['msfe_RF'] if row['baseline'] == 'RF' else row['msfe_XGb'], axis=1)
+        
+        # Calculate ratio
+        df['msfe_ratio'] = df['msfe_wll'] / df['msfe_base']
+
+        plt.figure(figsize=(12, 6))
+        
+        # Plot Ratio
+        sns.lineplot(data=df, x="origin_date", y="msfe_ratio", marker="o", color='purple', label="Ratio (WLL / Base)")
+        
+        # Add parity line at 1
+        plt.axhline(1, color="black", linestyle="--", linewidth=1.5, label="Parity (1.0)")
+        
+        if reverse_time:
+            plt.gca().invert_xaxis()
+            
+        plt.yscale('log')
+        plt.title("Relative MSFE Ratio (WLL / Base) [Log Scale]", fontsize=14, fontweight='bold')
+        plt.xlabel("Rolling Origin Date", fontsize=12)
+        plt.ylabel("Ratio (Lower is Better for WLL)", fontsize=12)
+        plt.legend()
+        plt.grid(True, which="both", ls="-", alpha=0.2)
+        self._save_plot("msfe_ratio_log.png")
 
     def plot_hit_rate(self) -> None:
         """Plot cumulative hit rate over time."""
@@ -590,7 +633,9 @@ if __name__ == "__main__":
     exp.plot_pi_vs_origin()
     exp.plot_msfe_comparison()
     exp.plot_hit_rate()
+    exp.plot_hit_rate()
     exp.plot_pi_distribution()
+    exp.plot_msfe_ratio()
 
 
 
