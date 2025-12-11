@@ -1,0 +1,222 @@
+% !TEX program = pdflatex
+\documentclass[11pt]{article}
+
+%---------- Packages ----------
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{setspace}
+\usepackage{enumerate}
+
+%---------- Hyperref setup ----------
+\hypersetup{
+colorlinks = true,
+linkcolor  = blue,
+citecolor  = blue,
+urlcolor   = blue
+}
+
+%---------- Custom commands ----------
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathbb{V}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+%---------- Title info ----------
+\title{Break-Aware Weighted Local Linear Forecasting\newline
+for Cocoa Returns: Nonparametrics vs Machine Learning}
+
+\author{S. Dong\ \small Draft Working Paper}
+
+\date{\today}
+
+%====================================================
+\begin{document}
+
+\maketitle
+\onehalfspacing
+
+\begin{abstract}
+This paper proposes a break-aware weighted local linear (WLL) 
+forecasting framework for cocoa futures returns,
+ combining nonparametric regression with structural break detection and machine-learning benchmarks. We document the empirical performance of WLL relative to random forests and gradient-boosted trees, and we analyze a rare but severe instability of WLL arising from break-aware tuning. We then show how simple regularization and tuning constraints restore the stability predicted by nonparametric theory.[0.5ex]
+\textbf{Keywords:} nonparametric forecasting, 
+structural breaks, local polynomial regression, random forests,
+ gradient boosting.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+% 1.1 Motivation
+% TODO: Explain why cocoa returns matter; role of structural breaks; why NP+breaks is interesting.
+
+% 1.2 Contributions
+% TODO: Bullet-style contributions (C1--C4) as prose.
+
+% 1.3 High-level findings
+% TODO: Summarize empirical ranking of models and main messages.
+
+\section{Data and Empirical Setting}
+\label{sec:data}
+
+\subsection{Cocoa returns and sample construction}
+% TODO: Describe data source, frequency, log-return definition, sample period.
+
+\subsection{Sample splitting and forecasting design}
+% TODO: Define full sample, pre-break, post-break, and OOS forecast period.
+
+\subsection{Stylized facts}
+% TODO: Basic plots and descriptive statistics; volatility clustering, heavy tails.
+
+\section{Structural Break Detection Framework}
+\label{sec:breaks}
+
+\subsection{Testing procedure}
+% TODO: Outline Mohr--Selk style structural break test; notation, hypotheses, statistic.
+
+\subsection{Detected break dates}
+% TODO: Report global break around 2005-11-11 and local evidence of later breaks (2017, 2022, etc.).
+
+\subsection{Implications for forecasting}
+% TODO: Explain why training across breaks can hurt MSFE and motivates trimming / reweighting.
+
+\section{Break-Aware WLL Forecasting Method}
+\label{sec:wll-method}
+
+\subsection{Baseline local polynomial model}
+% TODO: Define univariate local linear regression for one-step-ahead returns.
+
+Let ${(x_t,y_t)}*{t=1}^T$ denote the predictor--response pairs, where $y_t$ is the (log-)return and $x_t$ is the predictor (possibly simply time or lagged variables). For a forecast origin $t_0$, the local linear estimator at $x*{t_0}$ solves
+\begin{equation}
+(\hat\beta_0,\hat\beta_1)
+= \arg\min_{\beta_0,\beta_1} \sum_{t \in \mathcal{I}} K_h(x_t - x_{t_0})\big(y_t - \beta_0 - \beta_1(x_t - x_{t_0})\big)^2,
+\end{equation}
+with kernel $K_h(\cdot)$ and index set $\mathcal{I}$ determined by the training window.
+
+\subsection{Incorporating break information}
+% TODO: Define detected break date $\hat{\tau}$ and how pre/post-break observations are treated.
+
+Let $\hat{\tau}$ denote a detected break date within the training window. A break-aware WLL introduces a weight parameter $\gamma \in [0,1]$ that governs the relative influence of pre-break and post-break observations.\footnote{Details can be adapted to the final formulation you settle on.}
+
+\subsection{MFV-based tuning of $(\gamma,h)$}
+% TODO: Describe rolling forward-validation scheme, grid search, and objective.
+
+\subsection{Implementation details}
+% TODO: LocalPolynomialEngine, GPU/CPU, kernel choice, boundary handling.
+
+\section{Machine-Learning Benchmarks}
+\label{sec:ml-benchmarks}
+
+\subsection{Random forests}
+% TODO: Briefly describe RF, key hyperparameters, and training protocol.
+
+\subsection{Gradient boosting (XGB)}
+% TODO: Describe XGB, loss, regularization, and tuning.
+
+\subsection{Training and evaluation protocol}
+% TODO: Ensure RF/XGB share the same information set and rolling design as WLL.
+
+\section{Rolling Forecast Experiment Design}
+\label{sec:rolling-design}
+
+\subsection{Rolling window setup}
+% TODO: Define origin dates, window length, forecast horizon, and notation for MSFE.
+
+\subsection{Model variants}
+% TODO: WLL with MFV-selected $\gamma$ vs $\gamma=1$; RF/XGB baselines.
+
+\subsection{Evaluation metrics}
+% TODO: MSFE, RMSE, MAE, possibly directional accuracy; how they are aggregated.
+
+\section{Main Empirical Results}
+\label{sec:main-results}
+
+\subsection{Overall MSFE comparison}
+% TODO: Table with OOS MSFE for all models; discuss ranking and magnitude.
+
+\subsection{Time-varying performance}
+% TODO: Rolling or cumulative MSFE plots; subsample results around breaks.
+
+\subsection{Bias--variance decomposition in normal regimes}
+% TODO: Present BVD for WLL with $\gamma=1$ (and possibly others), emphasizing bias-dominated behavior.
+
+\section{Pathological WLL Failure Mode}
+\label{sec:pathology}
+
+\subsection{Identification of an outlier origin}
+% TODO: Describe the specific origin (e.g. 2024-02-06) where WLL MSFE is extremely large while RF/XGB are normal.
+
+\subsection{Bias--variance decomposition of the failure}
+% TODO: Report BVD numbers (MSE, bias$^2$, variance) for the pathological run.
+
+\subsection{Linear-algebra diagnosis}
+% TODO: Show the local Gram matrix $G = X^\top W X$, its eigenvalues/condition number, and equivalent kernel weights.
+
+\subsection{Role of $\gamma$ and break geometry}
+% TODO: Explain how the MFV-selected $\gamma$ produces a degenerate effective neighborhood, and contrast with $\gamma=1$.
+
+\subsection{Interpretation}
+% TODO: Emphasize that this is a finite-sample numerical instability, not a DGP explosion.
+
+\section{Robustifying the WLL Estimator}
+\label{sec:robust-wll}
+
+\subsection{Regularization and constraints}
+% TODO: Introduce ridge term $(X^\top W X + \lambda I)^{-1}$ and bandwidth/,,$\gamma$ bounds.
+
+\subsection{Guardrails and fallbacks}
+% TODO: Heuristics for dropping or downweighting pathological fits relative to RF/XGB or $\gamma=1$ WLL.
+
+\subsection{Re-estimated performance}
+% TODO: Show that catastrophic spikes disappear and typical performance is preserved.
+
+\section{Discussion and Economic Interpretation}
+\label{sec:discussion}
+
+\subsection{Implications for cocoa markets}
+% TODO: Interpret break dates and model behavior in economic terms.
+
+\subsection{Nonparametrics vs ML for broken processes}
+% TODO: Discuss trade-offs between interpretability and robustness.
+
+\subsection{Broader lessons}
+% TODO: Generalize to other assets and to break-aware nonparametrics in macro/finance.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+% TODO: Summarize contributions, main empirical findings, limitations, and future work.
+
+\appendix
+
+\section*{Appendix}
+
+\section{Details of the Structural Break Test}
+% TODO: Formal statement and implementation details of the Mohr--Selk style test.
+
+\section{Asymptotic Properties of WLL under Breaks (Sketch)}
+% TODO: Optional theoretical sketch for the robustified WLL estimator.
+
+\section{Simulation Study}
+% TODO: DGPs, design, and results for $(\gamma,h)$ selection in controlled settings.
+
+\section{Additional Figures and Tables}
+% TODO: Per-origin MSFE, weight plots, extra BVD tables.
+
+\section{Code and Reproducibility}
+% TODO: Brief notes on repository structure and reproducibility.
+
+\bibliographystyle{chicago}
+\bibliography{cocoa_wll}
+
+\end{document}
