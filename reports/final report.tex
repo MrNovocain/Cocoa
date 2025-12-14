@@ -69,6 +69,93 @@ structural breaks, local polynomial regression, random forests,
 \section{Data and Empirical Setting}
 \label{sec:data}
 
+Cocoa futures provide an ideal testing ground for break-aware forecasting methods due to their unique market characteristics. As an agricultural commodity heavily concentrated in West Africa, cocoa supply is highly susceptible to climate shocks---such as El Ni\~no events---and supply-chain disruptions. These exogenous shocks induce discrete structural breaks in the conditional mean and volatility of prices, creating a nonstationary environment that aligns well with the time-varying regression framework. The economic interpretability of these breaks, driven by known weather patterns and market events, allows us to validate statistical break detection against historical ground truth.
+
+\subsection{Cocoa returns and sample construction}
+\label{subsec:data-construction}
+
+We work with a univariate time series of cocoa futures prices and construct log-returns as the target variable for forecasting.
+Let $p_t$ denote the settlement price of the nearby cocoa futures contract on business day $t$, expressed in the currency units quoted by the exchange.
+The log-return is defined as
+\begin{equation}
+  r_t = \log p_t - \log p_{t-1}, \qquad t = 2,\dots,T,
+\end{equation}
+and we take $\{r_t\}_{t=2}^T$ as the basic series of interest.
+
+The raw price data are obtained from \emph{[DATA SOURCE, e.g.\ exchange or vendor]} for the period from \emph{[START DATE]} to \emph{[END DATE]}.\footnote{%
+  For example: ``nearby cocoa futures traded on [EXCHANGE], downloaded from [VENDOR/URL]''. Fill in the precise source and access date here.
+}
+We construct a continuous nearby series by rolling from one contract to the next according to \emph{[ROLL RULE, e.g.\ volume-based or fixed days-to-maturity]}, and we drop days on which either prices are missing or the contract does not trade.
+Non-trading calendar days are left as gaps rather than interpolated; all models are estimated on the resulting sequence of business days.
+
+Throughout this paper we focus on a parsimonious univariate specification in which the predictor is a function of past returns.
+Formally, we treat $(x_t,y_t) = (x_t,r_t)$ with $y_t = r_t$ and $x_t$ constructed from lagged returns (for example, $x_t = r_{t-1}$ or a small vector of lags).
+In the empirical implementation reported below, we adopt \emph{[SPECIFY THE FINAL CHOICE, e.g.\ $x_t = r_{t-1}$]} as the baseline predictor; extensions to richer covariate sets (such as weather variables or macro indicators) are left for future work.\footnote{%
+  In earlier internal experiments we also considered including additional regressors; the present paper restricts attention to a single-regressor setup to isolate the effects of breaks and local smoothing.
+}
+
+\subsection{Sample splitting and forecasting design}
+\label{subsec:data-sample-split}
+
+Let $\{r_t\}_{t=1}^T$ denote the full sample of returns after cleaning and continuity adjustments.
+We partition the sample into three conceptually distinct parts:
+
+\begin{enumerate}[(i)]
+  \item an initial segment used only for structural break detection and establishing prior evidence on regime changes;
+  \item an in-sample segment used for estimation and internal tuning (including the forward-validation scheme);
+  \item an out-of-sample (OOS) evaluation segment used exclusively for assessing forecast performance.
+\end{enumerate}
+
+In the empirical results below, the effective estimation window available for break detection and model tuning consists of the first $T_{\text{train}}$ observations, and the OOS evaluation period comprises the remaining $T_{\text{OOS}} = T - T_{\text{train}}$ returns.
+In the baseline configuration we set $T_{\text{train}} = 6468$ and $T_{\text{OOS}} = 266$, so that the OOS evaluation period runs from \emph{[OOS START DATE]} to \emph{[OOS END DATE]}; these values align with the rolling experiment design implemented in our code.
+Within the estimation sample, we further distinguish between an inner segment used for structural break tests and a terminal segment reserved for forward-validation, as described in Sections~\ref{sec:breaks} and~\ref{sec:rolling-design}.
+
+For each forecast origin date $t_0$ in the OOS period, models are trained on a backward-looking window of length $W$ ending at $t_0 - 1$.
+The break-aware methods then apply structural break detection within this training window and construct estimators that adjust the influence of pre- and post-break observations.
+The same rolling window and information set are used for the nonparametric WLL estimators and for the machine-learning benchmarks, ensuring that differences in performance reflect modeling choices rather than differences in the timing or amount of available information.
+
+\subsection{Descriptive statistics and stylized facts}
+\label{subsec:data-facts}
+
+Before turning to the break detection and forecasting methods, we briefly summarize basic properties of the cocoa return series.
+Table~\ref{tab:descriptive-stats} reports standard descriptive statistics for $r_t$ over the full sample and over selected subsamples, including the pre-break and post-break periods defined by the main structural break date identified in Section~\ref{sec:breaks}.
+Mean returns are close to zero at all horizons, as is typical for daily futures returns, while the unconditional variance and higher moments exhibit substantial time variation.
+
+Figure~\ref{fig:returns-and-vol} plots the return series $\{r_t\}$ alongside a rolling estimate of realized volatility, for example a $60$-day rolling standard deviation of returns.
+The figure reveals pronounced volatility clustering and extended periods of elevated volatility, as well as several episodes in which both the level and dispersion of returns appear to shift.
+These visual features are consistent with the presence of structural breaks in the conditional distribution of returns and motivate a formal break analysis.
+
+The empirical distribution of returns is markedly non-Gaussian.
+Sample skewness and kurtosis (reported in Table~\ref{tab:descriptive-stats}) indicate fat tails and, in some subsamples, asymmetric behavior.
+Quantile plots and histograms (not shown to save space) confirm the prevalence of extreme observations relative to a normal benchmark.
+These stylized facts are important for interpreting the performance of different forecasting methods:
+nonparametric and machine-learning approaches may adapt more flexibly to changes in conditional moments, but they can also be sensitive to local data configurations and to how historical information is weighted across different regimes.
+
+% TODO: Insert actual descriptive statistics table and figure references.
+% Example placeholders:
+% \begin{table}[t]
+%   \centering
+%   \caption{Descriptive statistics for cocoa futures returns.}
+%   \label{tab:descriptive-stats}
+%   \begin{tabular}{lrrrr}
+%     \toprule
+%     Sample & Mean & Std.\ dev. & Skewness & Kurtosis \\
+%     \midrule
+%     Full sample        &      &      &      &      \\
+%     Pre-break period   &      &      &      &      \\
+%     Post-break period  &      &      &      &      \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}
+%
+% \begin{figure}[t]
+%   \centering
+%   % \includegraphics[width=0.8\textwidth]{returns_vol_plot.pdf}
+%   \caption{Cocoa futures returns and rolling realized volatility.}
+%   \label{fig:returns-and-vol}
+% \end{figure}
+
+
 \subsection{Cocoa returns and sample construction}
 % TODO: Describe data source, frequency, log-return definition, sample period.
 
