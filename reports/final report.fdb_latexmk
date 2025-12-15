@@ -1,5 +1,5 @@
 # Fdb version 4
-["bibtex final report"] 0 "final report.aux" "final report.bbl" "final report" 1765432854.18 0
+["bibtex final report"] 0 "final report.aux" "final report.bbl" "final report" 1765770645.94686 0
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/bibtex/bst/chicago/chicago.bst" 715284000 37416 2ae04276c51f11eda70770f4081293b7 ""
   "cocoa_wll.bib" 0 -1 0 ""
   "final report.aux" 0 -1 0 "pdflatex"
@@ -7,7 +7,7 @@
   "final report.bbl"
   "final report.blg"
   (rewritten before read)
-["pdflatex"] 1765432852.91627 "w:/Research/NP/Cocoa/reports/final report.tex" "final report.pdf" "final report" 1765432854.18071 0
+["pdflatex"] 1765770644.07205 "w:/Research/NP/Cocoa/reports/final report.tex" "final report.pdf" "final report" 1765770645.9477 0
   "C:/Users/shane/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1765346070 83788 3e06ff692e1323f668f12ea28ca579e9 ""
   "C:/Users/shane/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1727055435 24225087 5d5e4e74eb9b7c32dd2c381744d6087a ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1233951848 1120 1e8878807317373affa7f7bba4cf2f6a ""
@@ -130,11 +130,12 @@
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/tools/bm.sty" 1700599895 13231 2c742011581e2bf297e33520567d9464 ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/tools/enumerate.sty" 1700599895 3468 0ef513f22d965f96b06adb5cff671cd7 ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
-  "final report.aux" 1765432853 7813 3acb2acbf1d715525a6bad460cff77fd "pdflatex"
+  "final report.aux" 1765770645 8223 6b7d4254c492614facc500a214160ae4 "pdflatex"
   "final report.bbl" 0 -1 0 "bibtex final report"
-  "final report.out" 1765432853 9769 63038aa756a4216fa46115b35dbeefa7 "pdflatex"
-  "final report.tex" 1765432850 15036 65b710ab534f7eaba52d07daa55beff0 ""
-  "w:/Research/NP/Cocoa/reports/final report.tex" 1765432850 15036 65b710ab534f7eaba52d07daa55beff0 ""
+  "final report.out" 1765770645 9938 2ee28c7fcd8d46af8afd34c33a8d6a27 "pdflatex"
+  "final report.tex" 1765770439 17847 5e6ee21a5d3c3158af12773a28aed243 ""
+  "msfe_comparison.png" 1765262493 203847 777d11769082cc2ff260806396e3ff5a ""
+  "w:/Research/NP/Cocoa/reports/final report.tex" 1765770439 17847 5e6ee21a5d3c3158af12773a28aed243 ""
   (generated)
   "final report.aux"
   "final report.log"

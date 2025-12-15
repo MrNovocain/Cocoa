@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.9.22)  1 DEC 2025 19:47
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.9.22)  15 DEC 2025 12:05
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -288,7 +288,7 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line 21.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <5> on input line 21.
-<../output/gamma_vs_break_date_6114_6120_1.png, id=39, 722.7pt x 361.35pt>
+<../output/gamma_vs_break_date_6114_6120_1.png, id=43, 722.7pt x 361.35pt>
 File: ../output/gamma_vs_break_date_6114_6120_1.png Graphic file (type png)
 <use ../output/gamma_vs_break_date_6114_6120_1.png>
 Package pdftex.def Info: ../output/gamma_vs_break_date_6114_6120_1.png  used on input line 37.
@@ -302,46 +302,44 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [1
 
 {C:/Users/shane/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
-<../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png, id=57, 903.375pt x 486.3771pt>
+<../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png, id=61, 903.375pt x 486.3771pt>
 File: ../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png Graphic file (type png)
 <use ../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png>
-Package pdftex.def Info: ../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png  used on input line 72.
+Package pdftex.def Info: ../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png  used on input line 74.
 (pdftex.def)             Requested size: 422.77664pt x 227.62505pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png, id=58, 1009.371pt x 349.7868pt>
+<../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png, id=62, 1009.371pt x 349.7868pt>
 File: ../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png Graphic file (type png)
 <use ../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png>
-Package pdftex.def Info: ../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png  used on input line 80.
+Package pdftex.def Info: ../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png  used on input line 82.
 (pdftex.def)             Requested size: 422.77664pt x 146.50916pt.
+[2 <../output/gamma_vs_break_date_6114_6120_1.png>]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[2 <../output/gamma_vs_break_date_6114_6120_1.png>] [3 <../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png> <../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png>] (some result.aux)
+[3 <../output/cocoa_forecast/20251201_180239_NP_LL_Combo/oos_forecast.png> <../output/experiment_results/hypothesis_immediate_postbreak_20251130_214308.png>] [4] (some result.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `"some result".out' has not changed.
-(rerunfilecheck)             Checksum: A3972F958581C4466F8B1078231D4C46;1375.
+(rerunfilecheck)             Checksum: 4520B39BF3FEE2D62C0F7D9A050AC414;1644.
  ) 
 Here is how much of TeX's memory you used:
- 9064 strings out of 474485
- 144556 string characters out of 5743734
- 1939542 words of memory out of 5000000
- 31241 multiletter control sequences out of 15000+600000
- 564057 words of font info for 56 fonts, out of 8000000 for 9000
+ 9069 strings out of 474485
+ 144616 string characters out of 5743734
+ 1936542 words of memory out of 5000000
+ 31243 multiletter control sequences out of 15000+600000
+ 564403 words of font info for 57 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,8n,79p,623b,463s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\shane\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on "some result.pdf" (3 pages, 316616 bytes).
+ 75i,8n,79p,623b,515s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\shane\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on "some result.pdf" (4 pages, 346752 bytes).
 PDF statistics:
- 111 PDF objects out of 1000 (max. 8388607)
- 17 named destinations out of 1000 (max. 500000)
- 80 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 130 PDF objects out of 1000 (max. 8388607)
+ 19 named destinations out of 1000 (max. 500000)
+ 88 words of extra memory for PDF output out of 10000 (max. 10000000)
 

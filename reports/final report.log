@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.9.22)  11 DEC 2025 14:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.9.22)  15 DEC 2025 11:50
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -395,47 +395,54 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 46.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
-{C:/Users/shane/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+{C:/Users/shane/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [2]
 
-LaTeX Warning: Reference `tab:descriptive-stats' on page 2 undefined on input line 119.
-
-[2]
-
-LaTeX Warning: Reference `fig:returns-and-vol' on page 3 undefined on input line 122.
+LaTeX Warning: Reference `tab:descriptive-stats' on page 3 undefined on input line 121.
 
 
-LaTeX Warning: Reference `tab:descriptive-stats' on page 3 undefined on input line 127.
+LaTeX Warning: Reference `fig:returns-and-vol' on page 3 undefined on input line 124.
+
+
+LaTeX Warning: Reference `tab:descriptive-stats' on page 3 undefined on input line 129.
 
 [3]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 196.
+(hyperref)                removing `math shift' on input line 198.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\gamma' on input line 196.
+(hyperref)                removing `\gamma' on input line 198.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 196.
+(hyperref)                removing `math shift' on input line 198.
+
+
+LaTeX Warning: Reference `tab:msfe-results' on page 4 undefined on input line 233.
+
+[4]
+<msfe_comparison.png, id=245, 727.0362pt x 393.8715pt>
+File: msfe_comparison.png Graphic file (type png)
+<use msfe_comparison.png>
+Package pdftex.def Info: msfe_comparison.png  used on input line 248.
+(pdftex.def)             Requested size: 399.29463pt x 216.31746pt.
+ [5]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 268.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 250.
+(hyperref)                removing `\gamma' on input line 268.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\gamma' on input line 250.
+(hyperref)                removing `math shift' on input line 268.
 
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 250.
-
+[6 <./msfe_comparison.png>]
 No file "final report".bbl.
-[4] [5]
-Overfull \vbox (297.5792pt too high) has occurred while \output is active []
-
- [6] (final report.aux)
+[7] [8] (final report.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
@@ -445,16 +452,16 @@ L3 programming layer <2024-01-04>
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `"final report".out' has not changed.
-(rerunfilecheck)             Checksum: 63038AA756A4216FA46115B35DBEEFA7;9769.
+(rerunfilecheck)             Checksum: 2EE28C7FCD8D46AF8AFD34C33A8D6A27;9938.
  ) 
 Here is how much of TeX's memory you used:
- 11020 strings out of 474485
- 168905 string characters out of 5743734
- 1938542 words of memory out of 5000000
- 33074 multiletter control sequences out of 15000+600000
+ 11037 strings out of 474485
+ 169227 string characters out of 5743734
+ 1936542 words of memory out of 5000000
+ 33086 multiletter control sequences out of 15000+600000
  573537 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,8n,79p,461b,443s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,8n,79p,759b,466s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 pdfTeX warning (dest): name{Hfootnote.3} has been referenced but does not exist, replaced by a fixed one
 
@@ -465,9 +472,9 @@ pdfTeX warning (dest): name{Hfootnote.2} has been referenced but does not exist,
 pdfTeX warning (dest): name{Hfootnote.1} has been referenced but does not exist, replaced by a fixed one
 
 <C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/shane/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on "final report.pdf" (6 pages, 240153 bytes).
+Output written on "final report.pdf" (8 pages, 430128 bytes).
 PDF statistics:
- 331 PDF objects out of 1000 (max. 8388607)
- 65 named destinations out of 1000 (max. 500000)
- 393 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 349 PDF objects out of 1000 (max. 8388607)
+ 70 named destinations out of 1000 (max. 500000)
+ 398 words of extra memory for PDF output out of 10000 (max. 10000000)
 
