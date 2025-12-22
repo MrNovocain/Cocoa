@@ -1,0 +1,167 @@
+--- CELL 17 ---
+# Weighted Local Linear Model (CGS Method)
+print('Training Weighted Local Linear (WLL) Model...')
+
+mfv_combo = MFVConvexComboValidator(Q=Q_VALUE)
+gamma_grid = np.linspace(0, 1, 21)
+
+print(f'  Tuning gamma via MFV...')
+print(f'  Gamma grid: {len(gamma_grid)} candidates')
+
+params_pre_np = {'kernel': kernel, 'local_engine': local_engine, 'bandwidth': bw_pre}
+params_post_np = {'kernel': kernel, 'local_engine': local_engine, 'bandwidth': bw_post}
+
+best_gamma, best_gamma_mse = mfv_combo.tune_gamma(
+    model_class_pre=NPRegimeModel, params_pre=params_pre_np,
+    model_class_post=NPRegimeModel, params_post=params_post_np,
+    X_train_full=X_train_full, y_train_full=y_train_full,
+    break_index=TRAIN_BREAK_INDEX, gamma_grid=gamma_grid, verbose=False
+)
+
+model_wll = NPConvexCombinationModel(
+    kernel=kernel, local_engine=local_engine,
+    pre_bandwidth=bw_pre, post_bandwidth=bw_post,
+    break_index=TRAIN_BREAK_INDEX, gamma=best_gamma
+)
+model_wll.fit(X_train_full, y_train_full)
+
+print(f'  Optimal gamma: {best_gamma:.4f}')
+print(f'  Interpretation: {best_gamma*100:.1f}% weight on pre-break model')
+print(f'  MFV MSE: {best_gamma_mse:.8f}')
+print('  Model trained.')
+------------------
+--- CELL 19 ---
+# Random Forest
+print('Training Random Forest...')
+
+rf_param_combinations = [
+    dict(zip(RF_PARAM_GRID.keys(), v))
+    for v in product(*RF_PARAM_GRID.values())
+]
+
+print(f'  Grid size: {len(rf_param_combinations)} combinations')
+print('  Running MFV hyperparameter tuning...')
+
+mfv_rf = MFVValidator(Q=Q_VALUE)
+best_rf_params, best_rf_mse, _ = mfv_rf.grid_search(
+    model_class=RFModel,
+    X_train=X_train_full, y_train=y_train_full,
+    param_grid=rf_param_combinations, verbose=False
+)
+
+model_rf = RFModel(**best_rf_params)
+model_rf.fit(X_train_full, y_train_full)
+
+print(f'  Best params: {best_rf_params}')
+print(f'  MFV MSE: {best_rf_mse:.8f}')
+print('  Model trained.')
+------------------
+--- CELL 20 ---
+# XGBoost
+print('Training XGBoost...')
+
+xgb_param_combinations = [
+    dict(zip(XGB_PARAM_GRID.keys(), v))
+    for v in product(*XGB_PARAM_GRID.values())
+]
+
+print(f'  Grid size: {len(xgb_param_combinations)} combinations')
+print('  Running MFV hyperparameter tuning...')
+
+mfv_xgb = MFVValidator(Q=Q_VALUE)
+best_xgb_params, best_xgb_mse, _ = mfv_xgb.grid_search(
+    model_class=XGBModel,
+    X_train=X_train_full, y_train=y_train_full,
+    param_grid=xgb_param_combinations, verbose=False
+)
+
+model_xgb = XGBModel(**best_xgb_params)
+model_xgb.fit(X_train_full, y_train_full)
+
+print(f'  Best params: {best_xgb_params}')
+print(f'  MFV MSE: {best_xgb_mse:.8f}')
+print('  Model trained.')
+------------------
+--- CELL 22 ---
+# Weighted RF Combo
+print('Training Weighted RF Combo...')
+
+mfv_rf_combo = MFVConvexComboValidator(Q=Q_VALUE)
+best_gamma_rf, _ = mfv_rf_combo.tune_gamma(
+    model_class_pre=RFModel, params_pre=best_rf_params,
+    model_class_post=RFModel, params_post=best_rf_params,
+    X_train_full=X_train_full, y_train_full=y_train_full,
+    break_index=TRAIN_BREAK_INDEX, gamma_grid=gamma_grid, verbose=False
+)
+
+model_rf_combo = MLConvexCombinationModel(
+    model_class=RFModel, params_pre=best_rf_params, params_post=best_rf_params,
+    break_index=TRAIN_BREAK_INDEX, gamma=best_gamma_rf
+)
+model_rf_combo.fit(X_train_full, y_train_full)
+print(f'  Optimal gamma: {best_gamma_rf:.4f}')
+
+# Weighted XGB Combo
+print('Training Weighted XGB Combo...')
+
+mfv_xgb_combo = MFVConvexComboValidator(Q=Q_VALUE)
+best_gamma_xgb, _ = mfv_xgb_combo.tune_gamma(
+    model_class_pre=XGBModel, params_pre=best_xgb_params,
+    model_class_post=XGBModel, params_post=best_xgb_params,
+    X_train_full=X_train_full, y_train_full=y_train_full,
+    break_index=TRAIN_BREAK_INDEX, gamma_grid=gamma_grid, verbose=False
+)
+
+model_xgb_combo = MLConvexCombinationModel(
+    model_class=XGBModel, params_pre=best_xgb_params, params_post=best_xgb_params,
+    break_index=TRAIN_BREAK_INDEX, gamma=best_gamma_xgb
+)
+model_xgb_combo.fit(X_train_full, y_train_full)
+print(f'  Optimal gamma: {best_gamma_xgb:.4f}')
+
+print('All models trained.')
+------------------
+--- CELL 28 ---
+def modified_dm_test(y_true, pred1, pred2, h=1, power=2):
+    """Modified Diebold-Mariano test for forecast comparison."""
+    e1, e2 = y_true - pred1, y_true - pred2
+    d = np.abs(e1)**power - np.abs(e2)**power
+    n = len(d)
+    d_bar = np.mean(d)
+    gamma_0 = np.var(d, ddof=1)
+    
+    gamma_sum = sum(2 * (1 - k/h) * np.mean((d[k:] - d_bar) * (d[:-k] - d_bar))
+                    for k in range(1, h))
+    var_d = (gamma_0 + gamma_sum) / n
+    
+    if var_d <= 0:
+        return np.nan, np.nan
+    
+    dm_stat = d_bar / np.sqrt(var_d)
+    correction = np.sqrt((n + 1 - 2*h + h*(h-1)/n) / n)
+    mdm_stat = dm_stat * correction
+    p_value = 2 * stats.t.sf(np.abs(mdm_stat), df=n-1)
+    return mdm_stat, p_value
+
+# Pairwise MDM tests
+y_true_arr = y_test.values
+model_names = list(predictions.keys())
+
+mdm_matrix = pd.DataFrame(index=model_names, columns=model_names, dtype=float)
+pval_matrix = pd.DataFrame(index=model_names, columns=model_names, dtype=float)
+
+for m1 in model_names:
+    for m2 in model_names:
+        if m1 == m2:
+            mdm_matrix.loc[m1, m2] = 0.0
+            pval_matrix.loc[m1, m2] = 1.0
+        else:
+            stat, pval = modified_dm_test(y_true_arr, predictions[m1], predictions[m2])
+            mdm_matrix.loc[m1, m2] = stat
+            pval_matrix.loc[m1, m2] = pval
+
+print('MDM Test Statistics (positive = row model worse than column):')
+print(mdm_matrix.round(3).to_string())
+print('\nP-Values:')
+print(pval_matrix.round(3).to_string())
+------------------

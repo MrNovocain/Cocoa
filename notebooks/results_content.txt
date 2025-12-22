@@ -1,0 +1,92 @@
+--- CELL 25 ---
+# MSFE comparison chart
+model_colors = {
+    'Pre-Break LL': COLORS['pre_break'],
+    'Post-Break LL': COLORS['post_break'],
+    'WLL': COLORS['wll'],
+    'Random Forest': COLORS['rf'],
+    'XGBoost': COLORS['xgb'],
+    'RF Combo': COLORS['rf_combo'],
+    'XGB Combo': COLORS['xgb_combo'],
+}
+
+fig, ax = plt.subplots(figsize=(12, 7))
+bars = ax.barh(
+    results_df['Model'], results_df['MSFE'],
+    color=[model_colors.get(m, '#95A5A6') for m in results_df['Model']],
+    edgecolor='white', linewidth=1.5
+)
+
+for bar, msfe in zip(bars, results_df['MSFE']):
+    ax.text(bar.get_width() + 0.00001, bar.get_y() + bar.get_height()/2,
+            f'{msfe:.6f}', va='center', fontsize=10)
+
+ax.set_xlabel('Mean Squared Forecast Error (MSFE)')
+ax.set_title('Out-of-Sample Forecast Performance Comparison')
+ax.invert_yaxis()
+ax.axvline(x=best_msfe, color='#27AE60', linestyle='--', linewidth=2, alpha=0.7)
+plt.tight_layout()
+plt.show()
+------------------
+--- CELL 26 ---
+# Cumulative squared error over time
+fig, ax = plt.subplots(figsize=(14, 7))
+
+for name, preds in predictions.items():
+    sq_err = (y_test.values - preds) ** 2
+    cum_se = np.cumsum(sq_err)
+    color = model_colors.get(name, '#95A5A6')
+    lw = 3 if name == 'WLL' else 1.5
+    alpha = 1.0 if name == 'WLL' else 0.7
+    ax.plot(test_dates, cum_se, label=name, color=color, linewidth=lw, alpha=alpha)
+
+ax.set_xlabel('Date')
+ax.set_ylabel('Cumulative Squared Error')
+ax.set_title('Cumulative Out-of-Sample Squared Forecast Error')
+ax.legend(loc='upper left')
+ax.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+------------------
+--- CELL 37 ---
+# Scalar summary at day K
+cse_end = {m: cse_df[f"CSE_{m}"].iloc[-1] for m in models_to_check}
+
+cse_summary = (
+    pd.DataFrame({
+        "Model": models_to_check,
+        "CSE_first_K": [cse_end[m] for m in models_to_check],
+    })
+    .assign(**{'Rel_to_WLL_%': lambda df: (df['CSE_first_K'] / df.loc[df['Model'] == 'WLL', 'CSE_first_K'].values[0] - 1) * 100})
+)
+cse_summary.sort_values("CSE_first_K")
+------------------
+--- CELL 38 ---
+# Optional: windowed MSFE slices (e.g., 1-20, 21-40, 41-60)
+n = 20  # window length (adjust as needed)
+num_obs = len(y_true)
+windows = [(start, min(start + n, num_obs)) for start in range(0, num_obs, n)]
+
+win_rows = []
+for start, end in windows:
+    y_slice = y_true[start:end]
+    for m in models_to_check:
+        yhat_slice = pred_use[m].to_numpy()[start:end]
+        win_rows.append({
+            "Window": f"{start + 1}-{end}",
+            "Model": m,
+            "MSFE": msfe(y_slice, yhat_slice),
+        })
+
+win_df = pd.DataFrame(win_rows)
+
+win_rel = []
+for window in win_df["Window"].unique():
+    tmp = win_df[win_df["Window"] == window].copy()
+    wll_val = tmp.loc[tmp["Model"] == "WLL", "MSFE"].values[0]
+    tmp["Rel_to_WLL_%"] = (tmp["MSFE"] / wll_val - 1) * 100
+    win_rel.append(tmp)
+
+win_df_rel = pd.concat(win_rel, ignore_index=True)
+win_df_rel
+------------------

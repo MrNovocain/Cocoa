@@ -1,80 +1,72 @@
 # Cocoa Project (Python)
 
-Research scaffold for studying cocoa prices, structural breaks, and
-nonparametric vs ML forecasting.
+Research scaffold for studying cocoa prices, structural breaks, and nonparametric vs ML forecasting.
 
-This repo currently focuses on validating the Cai–Gao–Selk (CGS) weighted local linear (WLL) method on cocoa prices, and comparing it to standard machine learning models (Random Forest, XGBoost). A second phase will study how tree ensembles can be interpreted as adaptive local nonparametric smoothers.
+This repo currently focuses on validating the **CGS weighted local linear (WLL)** method on cocoa prices, and comparing it to standard machine learning models (Random Forest, XGBoost).
 
-## Setup
+---
 
+## Quick Start (Reproducibility)
+
+**Goal**: Reproduce the core experimental finding: WLL outperforms ML baselines (Random Forest, XGBoost) during the recent "El Niño" structural break in cocoa prices (2023-2024).
+
+### 1. Setup Environment
 ```bash
 # Create virtual environment
 python -m venv .venv
 
 # Activate (Windows PowerShell)
 .venv\Scripts\Activate.ps1
+# Mac/Linux: source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# (optional) create a Jupyter kernel
-python -m ipykernel install --user --name cocoa-project --display-name "Cocoa Project"
 ```
 
-Copy `.env.example` to `.env` and adjust as needed.
+### 2. Prepare Data
+Ensure the processed data file is present:
+- Path: `data/processed/cocoa_ghana_full.csv`
+- *Note: This file should be pre-generated from raw data. If missing, place strict raw data in `data/raw/` and run processing scripts.*
 
-Place your raw data file under `data/raw/` (e.g. `cocoa_raw.csv`), making sure
-the date and price columns match what `config.py` expects.
-
-Run the baseline experiment:
+### 3. Run Reproduction Demo
+Run the one-click reproduction script to generate the "Rank 1" evidence table and plot:
 
 ```bash
-python -m cocoa.experiments.run_cocoa_baseline
+python reproduce_demo.py
 ```
 
-## Core experiment: WLL vs ML on cocoa
+**Expected Output**:
+1.  **Break Detection**: The script runs Mohr-Selk and identifies the structural break around 2023/2024.
+2.  **Performance Table**: A comparison showing WLL (OOS MSFE) < XGBoost/RF.
+3.  **Plot**: A file `reproduction_results.png` is saved in the root directory, visualizing the error comparison.
 
-Main notebook (recommended entry point):
+---
 
-- `notebooks/WLL_Cocoa_Experiment.ipynb`
+## Full Rolling Experiment
 
-What it does:
+To run the comprehensive rolling-window backtest (validating the model over multiple years, not just the single recent break):
 
-- builds / loads the processed cocoa dataset,
-- detects a single structural break using Mohr–Selk (2020),
-- configures the train / test (OOS) split,
-- trains nonparametric benchmarks (Pre-Break LL, Post-Break LL, WLL),
-- trains ML competitors (Random Forest, XGBoost) and their weighted combos,
-- evaluates out-of-sample MSFE and cumulative squared error,
-- runs Modified Diebold–Mariano tests,
-- saves results and predictions under `output/experiment_results/`.
+```bash
+# Entry point for the full backtest
+python run_full_experiment.py
+```
 
-To reproduce the main results, activate the environment and run the notebook top to bottom. It assumes the processed cocoa CSV exists at the path in `src/cocoa/models/assets.py` (`PROCESSED_DATA_PATH`).
+This will:
+- Iterate backwards from the most recent data to 2021.
+- For each step, detect breaks, train WLL/ML models, and record OOS errors.
+- Save detailed logs and plots to `output/`.
 
-## Gamma vs break date: NP convex combo
+**Main Notebook**: 
+Alternatively, use `notebooks/WLL_Cocoa_Experiment.ipynb` for an interactive walkthrough of the full pipeline.
 
-File:
+---
 
-- `src/cocoa/experiments/run_np_combo_cv.py`
+## Analysis: Gamma vs Break Date
 
-Key pieces:
-
-- `gamma_break_grid(start_index, end_index, jump_size=1, save_plots=True, output_dir=...)`  
-  sweeps candidate structural break indices, runs the NP convex combination model via `ConvexComboExperimentRunner`, and returns a DataFrame with
-  - `break_index` (1-based index),
-  - `break_date`,
-  - `gamma` (optimal weight on the pre-break model),
-  - `in_sample_cv_mse` (MFV score),
-  - `oos_mse` (test MSE when available).
-
-- When `save_plots=True` it saves a two-panel figure showing
-  - gamma vs break date,
-  - CV MSE vs break date
-  as `gamma_and_cv_vs_break_date_<start>_<end>_<jump>.png` in `output_dir`.
-
-Typical usage around the detected break (from the Mohr–Selk step, e.g. index 6117):
+To study how the optimal smoothing parameter ($\gamma$) changes with different potential break dates:
 
 ```python
+# Usage Example
 from cocoa.experiments.run_np_combo_cv import gamma_break_grid
 
 detected_break = 6117
@@ -83,25 +75,14 @@ df_gamma = gamma_break_grid(
     end_index=detected_break + 3,
     jump_size=1,
     save_plots=True,
-    output_dir="w:/Research/NP/Cocoa/output",
+    output_dir="output/"
 )
-
-print(df_gamma)
 ```
 
-This is mainly for understanding how the optimal gamma moves when you slide the assumed break date.
+## Project Structure
 
-## Project structure (high level)
-
-- `src/cocoa/models/` – model implementations (NP, ML, combo, CV tools, evaluation).
-- `src/cocoa/experiments/` – experiment runners and scripts, including
-  - `runner.py` (generic and convex combo runners),
-  - `run_np_combo_cv.py` (gamma vs break date analysis).
-- `notebooks/` – Jupyter notebooks for end-to-end experiments:
-  - `WLL_Cocoa_Experiment.ipynb` – main WLL vs ML experiment.
-- `data/` – raw and processed cocoa data (paths configured in `assets.py`).
-- `output/` – experiment outputs, figures, and saved prediction tables.
-- `reports/` – LaTeX proposal / write-up.
-
-In a later phase, RF/XGB “local smoother” diagnostics and interpretability helpers will live under a small module such as `src/cocoa/interpretability/` and a separate notebook (e.g. `notebooks/ML_Local_Smoother_Interpretation.ipynb`). For now, the core WLL and gamma-vs-break functionality is stable.
-```
+- `src/cocoa/models/` – Implementations (NP, ML, Combo, Evaluation).
+- `src/cocoa/experiments/` – Runners for WLL, Rolling, and Sensitivity experiments.
+- `notebooks/` – Interactive analysis.
+- `data/` – Dataset storage.
+- `output/` – Experiment artifacts (Plots, CSVs).

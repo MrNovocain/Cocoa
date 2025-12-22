@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1765772121.66722 "w:/Research/NP/Cocoa/reports/advisor_note.tex" "advisor_note.pdf" "advisor_note" 1765772123.18645 2
+["pdflatex"] 1766403511.87934 "w:/Research/NP/Cocoa/reports/advisor_note.tex" "advisor_note.pdf" "advisor_note" 1766403513.4601 0
   "C:/Users/shane/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1765346070 83788 3e06ff692e1323f668f12ea28ca579e9 ""
   "C:/Users/shane/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1095.pk" 1733501962 12668 7c83ac0ff011f6e8584a6f270f8eaf41 ""
   "C:/Users/shane/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1727055435 24225087 5d5e4e74eb9b7c32dd2c381744d6087a ""
@@ -97,12 +97,13 @@
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/titlesec/titlesec.sty" 1736608268 48766 87a17a4ef312a39cd43896e34a679a56 ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/shane/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
-  "advisor_note.aux" 1765772122 1697 b394df6c0cf34cc34083c2359a0f7628 "pdflatex"
-  "advisor_note.out" 1765772122 1766 4c8df49fb0c6ccb105b77ec8b7d56cca "pdflatex"
-  "advisor_note.tex" 1765771597 6879 0e8eee7b68a90b4281631de1354d2026 ""
+  "advisor_meeting_visuals/4_speed_cumulative_error_clean.png" 1766232676 108144 4286657bfa3a790c09fe25a550db5bd0 ""
+  "advisor_note.aux" 1766403513 2083 c343aa41747469829e3ddbda2eb87492 "pdflatex"
+  "advisor_note.out" 1766403513 1825 f8d62b49c91d52cf5fc7a8693e0685a0 "pdflatex"
+  "advisor_note.tex" 1766403511 8010 fd0738473ae27d5427d7096e691b545d ""
   "break_vs_origin.png" 1765262492 149340 779f358a8da041e6383dfae76ccad1e5 ""
   "msfe_comparison.png" 1765262493 203847 777d11769082cc2ff260806396e3ff5a ""
-  "w:/Research/NP/Cocoa/reports/advisor_note.tex" 1765771597 6879 0e8eee7b68a90b4281631de1354d2026 ""
+  "w:/Research/NP/Cocoa/reports/advisor_note.tex" 1766403511 8010 fd0738473ae27d5427d7096e691b545d ""
   (generated)
   "advisor_note.aux"
   "advisor_note.log"
