@@ -5,7 +5,7 @@
 \usepackage{booktabs}
 \usepackage{geometry}
 \usepackage{hyperref}
-\usepackage{natbib}
+\usepackage[numbers]{natbib}
 \usepackage{xcolor}
 \usepackage{titlesec}
 \usepackage{enumitem}
@@ -36,13 +36,17 @@ In forecasting volatile commodities like cocoa, we face a fundamental trade-off 
     \item \textbf{The Black-Box (ML):} Tree ensembles (Random Forest, XGBoost) offer superior flexibility in capturing high-dimensional interactions. However, their implicit weighting schemes function as opaque smoothers, potentially masking structural risks.
 \end{itemize}
 
-\noindent \textbf{Core Question:} Can we trust the stability of ML models during structural breaks, or is their robustness partially illusory?
+\noindent \textbf{Core Questions:} This research addresses two fundamental inquiries:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{The Stability Question:} Is the "smoothness" of black-box ML models during structural breaks a sign of true robustness, or an illusion of certainty?
+    \item \textbf{The Generalization Question:} Is the glass-box WLL estimator a universal replacement for ML, or a specialist tool for high-volatility regimes?
+\end{enumerate}
 
 % 2. Evidence (用你的实验结果作为辩论证据)
 \section{Empirical Evidence: The Tale of Two Experiments}
 
 \subsection{Evidence A: The Failure of "Manual Boosting"}
-To bridge the gap between WLL and ML, I attempted to manually introduce a nonlinear bias correction term into the WLL framework: $\hat{m}_{new}(x) = \hat{m}_{post}(x) + \beta(x) g(\hat{\lambda})$.
+To bridge the gap between WLL and ML, I attempted to manually introduce a nonlinear bias correction term into the WLL framework: $\hat{m}_{new}(x) = \hat{m}_{post}(x) + \beta(x) g(\hat{\lambda})$, where $g(u) = \text{sgn}(u)\log(1+|u|)$.
 \begin{itemize}[leftmargin=*]
     \item \textbf{Result:} This extension failed to improve forecasting accuracy. The MSFE improvement was \textbf{0.00\%} ($\beta \to 0$) compared to the baseline WLL.
     \item \textbf{Insight:} This failure highlights the difficulty of \textit{hand-crafting} nonlinear features for structural breaks. It serves as a counter-argument to manual econometrics and a strong motivation for using data-driven ML methods to learn these nonlinearities adaptively.
@@ -74,17 +78,28 @@ While sensitive in rolling windows, the CGS framework proves superior when the s
     % User said: "If you don't have the image file...". I DO have it, but I need to copy it to artifacts to embed it properly if I were rendering markdown.
     % Since this is LaTeX code for the user to copy, I will use the filename 'msfe_comparison.png' and assume they put it in the same folder.
     \includegraphics[width=0.48\textwidth]{msfe_comparison.png}
-    \includegraphics[width=0.48\textwidth]{break_vs_origin.png} % Placeholder or use actual cumulative SE plot if available
-    \caption{\textbf{Left:} Rolling Sensitivity. WLL jumps with break dates. \textbf{Right:} Fixed-Window Stability. In the El Ni\~no experiment, WLL (Rank 1) effectively captures the regime shift.}
+    \includegraphics[width=0.48\textwidth]{break_vs_origin.png}
+    \caption{\textbf{Evidence B: Rolling Sensitivity.} \textbf{Left:} MSFE Comparison. \textbf{Right:} Break Date Sensitivity. WLL jumps with break dates.}
     \label{fig:rolling}
 \end{figure}
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{advisor_meeting_visuals/4_speed_cumulative_error_clean.png}
+    \caption{\textbf{Evidence C: Fixed-Window Stability.} In the El Ni\~no experiment, WLL (Rank 1) effectively captures the regime shift (lowest cumulative error).}
+    \label{fig:cum_se}
+\end{figure}
+
 % 3. Resolution (未来的融合方向)
-\section{Resolution: Towards Interpretable "NP-ML"}
+\section{Resolution: A Specialist Tool for Structural Crises}
 
-The evidence suggests that neither method is sufficient on its own. WLL is too sensitive to break estimation in small samples, while ML is too opaque to trust blindly.
+The empirical results provide clear answers to our core questions:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{On Stability (It's an Illusion):} The "smoothness" of ML models (Evidence B) often masks structural risks ("inert"), whereas WLL's sensitivity "honestly" reflects regime uncertainty.
+    \item \textbf{On Generalization (Specialist $>$ Generalist):} WLL is not a universal replacement for ML in stable periods (where it minimizes to a noisy local linear estimator). Instead, it is a \textbf{dominant specialist} for clear structural breaks, as proven by its Rank 1 performance during the El Ni\~no shock (Evidence C).
+\end{itemize}
 
-\noindent \textbf{Proposed Research Agenda:}
+\noindent \textbf{Proposed Research Agenda: "Auditing" Black Boxes}
 Instead of treating them as competitors, I propose to use the CGS framework as an \textbf{"Auditing Tool"} for Machine Learning. My future work aims to:
 \begin{enumerate}
     \item \textbf{Extract Implicit Weights:} Reverse-engineer the effective weights of Random Forests.
